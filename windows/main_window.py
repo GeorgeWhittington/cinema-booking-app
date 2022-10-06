@@ -1,6 +1,10 @@
-import tkinter as tk
+from tkinter import Frame, Label
 
-class MainWindow(tk.Frame):
+
+class MainWindow(Frame):
     def __init__(self, parent, *args, **kwargs):
-        tk.Frame.__init__(self, parent, *args, **kwargs)
+        Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
+
+        self.label = Label(parent, text="Hello World")
+        self.label.pack()
