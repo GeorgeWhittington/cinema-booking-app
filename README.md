@@ -3,8 +3,10 @@
 A desktop application for the booking of cinema tickets.
 
 # Requirements
+
 1. [Python](https://www.python.org/downloads/) 3.10.7
 2. [tkinter](https://docs.python.org/3/library/tkinter.html) v0.1.0
+3. [Pillow](https://pypi.org/project/Pillow/) v9.2.0
 
 # Installation
 

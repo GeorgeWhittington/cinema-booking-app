@@ -1,9 +1,12 @@
-from tkinter import Tk
-from windows import MainWindow
-from windows import login
+from tkinter import Tk, Image
+from windows import MainWindow, LoginWindow
 
 if __name__ == "__main__":
     root = Tk()
-    MainWindow(root).pack(side="top", fill="both", expand=True)
-    login(root).pack()
+
+    icon_img = Image("photo", file="assets/icon.png")
+    root.tk.call('wm', 'iconphoto', root._w, icon_img)
+
+    # MainWindow(root).pack(side="top", fill="both", expand=True)
+    LoginWindow(root).grid(row=0, column=0)
     root.mainloop()
