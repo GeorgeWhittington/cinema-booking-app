@@ -1,6 +1,8 @@
 from tkinter import ttk
 from PIL import ImageTk, Image
 
+from database_models import session_scope, User
+
 
 class LoginWindow(ttk.Frame):
     def __init__(self, parent):
@@ -21,14 +23,18 @@ class LoginWindow(ttk.Frame):
         self.password_label.grid(column=0, row=2, sticky=("E",))
         self.password_entry.grid(column=1, row=2, sticky=("E", "W"))
 
-        self.login_button = ttk.Button(parent, text="Login", command=self.login_click)
+        self.login_button = ttk.Button(parent, text="Login", command=self.click_login)
         self.login_button.grid(column=0, row=3, columnspan=2)
 
         parent.columnconfigure(0, weight=1)
         parent.columnconfigure(1, weight=5)
 
-    def login_click(self):
+    def click_login(self):
         print(f"Username: '{self.username_entry.get()}' Password: '{self.password_entry.get()}'")
-        pass
-        # myLabel = ttk.Label(self.master, text="Invalid Username " + self.username_entry.get())
-        # myLabel.pack()
+        with session_scope() as session:
+            user = session.query(User).filter_by(username=self.username_entry.get()).first()
+            if user.verify_password(self.password_entry.get()):
+                print("Password matches")
+                return
+            
+            print("Invalid password, please try again")

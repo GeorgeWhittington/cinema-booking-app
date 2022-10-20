@@ -1,7 +1,13 @@
 from tkinter import Tk, Image
+
 from windows import MainWindow, LoginWindow
+from database_models import session_scope, User
 
 if __name__ == "__main__":
+    with session_scope() as session:
+        new_user = User(username="admin", password="pass")
+        session.add(new_user)
+
     root = Tk()
 
     icon_img = Image("photo", file="assets/icon.png")
