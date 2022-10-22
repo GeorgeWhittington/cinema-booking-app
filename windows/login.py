@@ -30,9 +30,9 @@ class LoginWindow(ttk.Frame):
         parent.columnconfigure(1, weight=5)
 
     def click_login(self):
-        print(f"Username: '{self.username_entry.get()}' Password: '{self.password_entry.get()}'")
         with session_scope() as session:
             user = session.query(User).filter_by(username=self.username_entry.get()).first()
+
             if user.verify_password(self.password_entry.get()):
                 print("Password matches")
                 return

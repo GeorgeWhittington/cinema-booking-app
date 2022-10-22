@@ -162,3 +162,5 @@ cython_debug/
 # Project specific
 /drafts
 /config/config.json
+**/.DS_Store
+*.db

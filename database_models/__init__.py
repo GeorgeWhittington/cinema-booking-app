@@ -6,7 +6,17 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+from database_models.booking import Booking
+from database_models.cinema import Cinema
+from database_models.city import City
+from database_models.film import Film
+from database_models.genre import Genre
+from database_models.screen import Screen
+from database_models.showing import Showing
 from database_models.user import User
+
+from database_models.film import AgeRatings
+from database_models.user import Authority
 
 from config import DATABASE_URI
 
