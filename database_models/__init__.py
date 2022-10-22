@@ -6,6 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+# Database tables
 from database_models.booking import Booking
 from database_models.cinema import Cinema
 from database_models.city import City
@@ -15,6 +16,7 @@ from database_models.screen import Screen
 from database_models.showing import Showing
 from database_models.user import User
 
+# Enums
 from database_models.film import AgeRatings
 from database_models.user import Authority
 
