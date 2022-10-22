@@ -1,3 +1,5 @@
+from datetime import time
+
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
@@ -25,3 +27,22 @@ class Booking(Base):
 
     def __repr__(self):
         return f"<Booking(id={self.id}, showing={self.showing})>"
+
+    def calculate_price(self):
+        city = self.showing.screen.cinema.city
+
+        if time(8, 0, 0) <= self.showing.show_time < time(12, 0, 0):
+            # Starts between 8am-11:59am
+            base_price = city.morning_price
+        elif time(12, 0, 0) <= self.showing.show_time < time(17, 0, 0):
+            # Starts between 12pm-4:59pm
+            base_price = city.afternoon_price
+        elif time(17, 0, 0) <= self.showing.show_time <= time(24, 0, 0):
+            # Starts between 5pm-12am
+            base_price = city.evening_price
+        
+        price = base_price * self.lower_booked
+        price += base_price * self.upper_booked * 1.2
+        price += (base_price * self.vip_booked * 1.2) * 1.2
+
+        return round(price, 2)
