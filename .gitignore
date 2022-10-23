@@ -164,3 +164,4 @@ cython_debug/
 /config/config.json
 **/.DS_Store
 *.db
+*.code-workspace
