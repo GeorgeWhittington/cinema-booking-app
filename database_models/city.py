@@ -5,7 +5,7 @@ from database_models import Base
 
 
 class City(Base):
-    __tablename__ = "cities"
+    __tablename__ = "city"
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)

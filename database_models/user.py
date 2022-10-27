@@ -14,10 +14,10 @@ class Authority(enum.Enum):
 
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
-    cinema_id = Column(Integer, ForeignKey("cinemas.id"))
+    cinema_id = Column(Integer, ForeignKey("cinema.id"))
     username = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
     authority = Column(Enum(Authority), nullable=False)

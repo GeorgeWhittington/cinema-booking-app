@@ -12,10 +12,10 @@ class Booking(Base):
     Card details are not stored in database, they are "sent" to 
     payment handler securely.
     """
-    __tablename__ = "bookings"
+    __tablename__ = "booking"
 
     id = Column(Integer, primary_key=True)
-    showing_id = Column(Integer, ForeignKey("showings.id"))
+    showing_id = Column(Integer, ForeignKey("showing.id"))
     lower_booked = Column(Integer, nullable=False)
     upper_booked = Column(Integer, nullable=False)
     vip_booked = Column(Integer, nullable=False)

@@ -5,10 +5,10 @@ from database_models import Base
 
 
 class Screen(Base):
-    __tablename__ = "screens"
+    __tablename__ = "screen"
 
     id = Column(Integer, primary_key=True)
-    cinema_id = Column(Integer, ForeignKey("cinemas.id"))
+    cinema_id = Column(Integer, ForeignKey("cinema.id"))
     lower_capacity = Column(Integer, nullable=False)
     upper_capacity = Column(Integer, nullable=False)
     vip_capacity = Column(Integer, nullable=False)

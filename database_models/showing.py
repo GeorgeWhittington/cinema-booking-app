@@ -7,11 +7,11 @@ from database_models import Base
 class Showing(Base):
     """A showing of a film. Number of booked seats can be tracked by
     querying the related bookings."""
-    __tablename__ = "showings"
+    __tablename__ = "showing"
 
     id = Column(Integer, primary_key=True)
-    screen_id = Column(Integer, ForeignKey("screens.id"))
-    film_id = Column(Integer, ForeignKey("films.id"))
+    screen_id = Column(Integer, ForeignKey("screen.id"))
+    film_id = Column(Integer, ForeignKey("film.id"))
     # Only recording start time since I'm assuming that pricing is based on that? 
     # Clarify with Zaheer what happens when film is shown across two pricing time ranges
     # e.g. starts at 11:00 at morning price, finishes at 13:10 with afternoon price

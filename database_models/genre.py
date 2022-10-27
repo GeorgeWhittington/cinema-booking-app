@@ -6,7 +6,7 @@ from database_models.m2m_tables import film_genre
 
 
 class Genre(Base):
-    __tablename__ = "genres"
+    __tablename__ = "genre"
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)

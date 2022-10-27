@@ -9,10 +9,10 @@ class Cinema(Base):
     
     The prices at a cinema are determined by the city they are in.
     """
-    __tablename__ = "cinemas"
+    __tablename__ = "cinema"
 
     id = Column(Integer, primary_key=True)
-    city_id = Column(Integer, ForeignKey("cities.id"))
+    city_id = Column(Integer, ForeignKey("city.id"))
     name = Column(String, nullable=False, unique=True)
 
     city = relationship("City", back_populates="cinemas")

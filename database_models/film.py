@@ -16,7 +16,7 @@ class AgeRatings(enum.Enum):
 
 
 class Film(Base):
-    __tablename__ = "films"
+    __tablename__ = "film"
 
     id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False)  # Don't enforce unique, films can have same name
