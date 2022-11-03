@@ -12,9 +12,8 @@ class Showing(Base):
     id = Column(Integer, primary_key=True)
     screen_id = Column(Integer, ForeignKey("screen.id"))
     film_id = Column(Integer, ForeignKey("film.id"))
-    # Only recording start time since I'm assuming that pricing is based on that? 
-    # Clarify with Zaheer what happens when film is shown across two pricing time ranges
-    # e.g. starts at 11:00 at morning price, finishes at 13:10 with afternoon price
+    # Only recording start time since pricing is based on that 
+    # e.g. starts at 11:00 at morning price, even though it ends in afternoon range
     show_time = Column(DateTime, nullable=False)
 
     screen = relationship("Screen", back_populates="showings")
