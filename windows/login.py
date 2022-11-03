@@ -16,18 +16,18 @@ class LoginWindow(ttk.Frame):
         self.username_label = ttk.Label(parent, text="Username:")
         self.username_entry = ttk.Entry(parent)
         self.username_label.grid(column=0, row=1, sticky=("E",))
-        self.username_entry.grid(column=1, row=1, sticky=("E", "W"))
+        self.username_entry.grid(column=1, row=1, sticky=("W",))
 
         self.password_label = ttk.Label(parent, text="Password:")
         self.password_entry = ttk.Entry(parent, show="*")
         self.password_label.grid(column=0, row=2, sticky=("E",))
-        self.password_entry.grid(column=1, row=2, sticky=("E", "W"))
+        self.password_entry.grid(column=1, row=2, sticky=("W",))
 
         self.login_button = ttk.Button(parent, text="Login", command=self.click_login)
         self.login_button.grid(column=0, row=3, columnspan=2)
 
         parent.columnconfigure(0, weight=1)
-        parent.columnconfigure(1, weight=5)
+        parent.columnconfigure(1, weight=1)
 
     def click_login(self):
         with session_scope() as session:

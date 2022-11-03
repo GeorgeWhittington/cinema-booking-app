@@ -10,4 +10,7 @@ if __name__ == "__main__":
 
     # MainWindow(root).pack(side="top", fill="both", expand=True)
     LoginWindow(root).grid(row=0, column=0)
+
+    root.resizable(False, False)
+
     root.mainloop()
