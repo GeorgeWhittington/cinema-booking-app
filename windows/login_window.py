@@ -36,6 +36,7 @@ class LoginWindow(ttk.Frame):
             if user.verify_password(self.password_entry.get()):
                 print("Password matches")
                 self.master.current_user = user
+                self.master.add_menu()
                 self.master.switch_window(MainWindow)
                 return
             
