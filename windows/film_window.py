@@ -1,10 +1,109 @@
+from datetime import datetime
 from io import BytesIO
 
 from cairosvg import svg2png
-from tkinter import ttk
+from tkinter import ttk, messagebox, Text
 from PIL import ImageTk, Image
 
-from database_models import session_scope, Film
+from database_models import session_scope, Film, AgeRatings
+
+
+class FilmEditWindow(ttk.Frame):
+    """Dialog for adding or updating Films.
+    
+    If 'edit_type' is EDIT then the kwarg 'film' needs to be set to the
+    film being edited.
+    """
+
+    ADD = "Add"
+    EDIT = "Edit"
+
+    def __init__(self, parent, *args, **kwargs):
+        self.dismiss = kwargs.pop("dismiss")
+        self.edit_type = kwargs.pop("edit_type")
+        
+        if self.edit_type == FilmEditWindow.ADD:
+            parent.title("Add Film")
+        
+        if self.edit_type == FilmEditWindow.EDIT:
+            self.film = kwargs.pop("film")
+            with session_scope() as session:
+                parent.title(f"Edit Film - {self.film.title}")
+        
+        super().__init__(parent, *args, **kwargs)
+
+        # Widget Creation
+        self.title_label = ttk.Label(self, text="Title:")
+        self.year_label = ttk.Label(self, text="Year Published:")
+        self.rating_label = ttk.Label(self, text="Rating:")
+        self.age_rating_label = ttk.Label(self, text="Age Rating:")
+        self.duration_label = ttk.Label(self, text="Duration:")
+        self.synopsis_label = ttk.Label(self, text="Synopsis:")
+        self.cast_label = ttk.Label(self, text="Cast:")
+
+        self.title_entry = ttk.Entry(self)
+
+        self.year_entry = ttk.Combobox(self)
+        self.year_entry["values"] = list(range(1890, datetime.now().year + 1)) # Max year is current year, may want to change this after consulting with Zaheer
+        
+        self.rating_entry = ttk.Combobox(self)
+        self.rating_entry["values"] = list(range(0, 101))
+        
+        self.age_rating_entry = ttk.Combobox(self)
+        self.age_rating_entry["values"] = [age_rating.value for age_rating in AgeRatings]
+
+        self.duration_frame = ttk.Frame(self)
+
+        self.duration_hours = ttk.Combobox(self.duration_frame)
+        self.duration_hours["values"] = list(range(0, 100))
+        self.hours_label = ttk.Label(self.duration_frame, text="hours")
+
+        self.duration_minutes = ttk.Combobox(self.duration_frame)
+        self.duration_minutes["values"] = list(range(0, 60))
+        self.minutes_label = ttk.Label(self.duration_frame, text="minutes")
+
+        self.synopsis_entry = Text(self, height=5)  # 5 lines of text high
+
+        self.cast_entry = ttk.Entry(self)
+
+        # Gridding
+        widgets = [
+            (self.title_label, self.title_entry),
+            (self.year_label, self.year_entry),
+            (self.rating_label, self.rating_entry),
+            (self.age_rating_label, self.age_rating_entry),
+            (self.duration_label, self.duration_frame),
+            (self.synopsis_label, self.synopsis_entry),
+            (self.cast_label, self.cast_entry)
+        ]
+
+        for y, (label, entry) in enumerate(widgets):
+            label.grid(column=0, row=y, sticky="w")
+            entry.grid(column=1, row=y, sticky="ew")
+
+        self.duration_hours.grid(column=0, row=0)
+        self.hours_label.grid(column=1, row=0)
+        self.duration_minutes.grid(column=2, row=0)
+        self.minutes_label.grid(column=3, row=0)
+
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+
+        # Prefilling with existing values if an EDIT window
+        if self.edit_type == FilmEditWindow.ADD:
+            return
+        
+        with session_scope() as session:
+            self.title_entry.insert(0, self.film.title)
+            self.year_entry.set(self.film.year_published)
+            self.rating_entry.set(int(self.film.rating * 100))
+            self.age_rating_entry.set(self.film.age_rating.value)
+            m, s = divmod(self.film.duration.total_seconds(), 60)
+            h, m = divmod(m, 60)
+            self.duration_hours.set(int(h))
+            self.duration_minutes.set(int(m))
+            self.synopsis_entry.insert("1.0", self.film.synopsis)  # Inserts at line 1 char 0
+            self.cast_entry.insert(0, self.film.cast)
 
 
 class FilmWindow(ttk.Frame):
@@ -104,7 +203,8 @@ class FilmWindow(ttk.Frame):
 
         self.columnconfigure(0, weight=1)
 
-    def create_icon(self, url):
+    @staticmethod
+    def create_icon(url):
         out = BytesIO()
         svg2png(url=url, write_to=out)
         return ImageTk.PhotoImage(Image.open(out).resize((15, 15)))
@@ -118,12 +218,15 @@ class FilmWindow(ttk.Frame):
 
     def treeview_select(self, event):
         """Listens to the treeview select virtual event to update the inspect section."""
-        if not self.inspected_film_id:
-            # A selection has been made, so these buttons can be enabled
-            self.delete_film_button.state(["!disabled"])
-            self.update_film_button.state(["!disabled"])
+        try:
+            selected_id = int(self.treeview.selection()[0])
+        except IndexError:
+            return
 
-        selected_id = int(self.treeview.selection()[0])
+        # A selection has been made, so these buttons can be enabled
+        self.delete_film_button.state(["!disabled"])
+        self.update_film_button.state(["!disabled"])
+
         if self.inspected_film_id == int(self.treeview.selection()[0]):
             return
 
@@ -163,13 +266,42 @@ class FilmWindow(ttk.Frame):
         self.window_height = event.height
 
     def add_film(self):
-        pass
+        self.master.show_modal(FilmEditWindow, {"edit_type": FilmEditWindow.ADD})
 
     def delete_film(self):
-        pass
+        selected_id = int(self.treeview.selection()[0])
+
+        with session_scope() as session:
+            selected_film = session.query(Film).get(selected_id)
+            if not selected_film:  # This shouldn't happen, but we can't continue if it somehow does
+                return
+
+            confirm = messagebox.askyesno(
+                message=f"Are you sure you want to delete the film {selected_film.title}?",
+                title="Delete", icon="question")
+
+            if not confirm:
+                return
+
+            session.delete(selected_film)
+            self.treeview.delete(str(selected_id))
+        
+        # film deleted -> selection cleared, so delete and update buttons need to be disabled again
+        self.delete_film_button.state(["disabled"])
+        self.update_film_button.state(["disabled"])
 
     def update_film(self):
-        pass
+        selected_id = int(self.treeview.selection()[0])
+
+        with session_scope() as session:
+            film = session.query(Film).get(selected_id)
+            if not film:
+                return
+
+        self.master.show_modal(FilmEditWindow, {
+            "edit_type": FilmEditWindow.EDIT,
+            "film": film
+        })
 
     def view_film_showings(self):
         pass

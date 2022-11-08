@@ -1,5 +1,5 @@
 from functools import partial
-from tkinter import Tk, ttk, Menu
+from tkinter import Tk, ttk, Menu, Toplevel
 
 from database_models import session_scope, Authority
 from windows import FilmWindow
@@ -82,11 +82,43 @@ class CinemaApplication(Tk):
             self.menu_edit.add_separator()
             self.menu_edit.add_command(label="Update/Delete Locations", command=partial(print, "Update/Delete Locations"))
 
-    def show_modal(self, window: ttk.Frame):
+    def show_modal(self, window: ttk.Frame, window_kwargs: dict):
         """Creates a popup window containing the frame specified.
 
-        The root window will be disabled while this popup is open."""
-        raise NotImplementedError
+        The root window will be disabled while this popup is open.
+
+        If the window object that gets instantiated sets the attribute
+        'result' before exiting using the dismiss function it is passed
+        that value will be returned.
+        
+        Adapted from the "Rolling Your Own" section at the bottom of
+        this page: https://tkdocs.com/tutorial/windows.html
+        """
+        # TODO: Consider making a Modal class that all modals need to subclass
+        # from and exporting some of this logic there (especially dismiss)
+        dialog = Toplevel(self)
+        result = None
+
+        def dismiss():
+            dialog.grab_release()
+            # Fetch result before destroying, if there is a result
+            try:
+                result = dialog.result
+            except AttributeError:
+                pass
+            dialog.destroy()
+
+        dialog_frame = window(dialog, dismiss=dismiss, **window_kwargs)
+        dialog_frame.grid(column=0, row=0, sticky="nsew")
+        dialog.resizable(False, False)
+
+        dialog.protocol("WM_DELETE_WINDOW", dismiss)
+        dialog.transient(self)
+        dialog.wait_visibility()
+        dialog.grab_set()
+        dialog.wait_window()
+
+        return result
 
     @staticmethod
     def show_preferences_dialog():
