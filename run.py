@@ -11,6 +11,8 @@ if __name__ == "__main__":
 
     root.title("Horizon Cinemas Booking")
 
+    root.minsize(500, 200)
+
     # Configure Preferences menu item for MacOS
     root.createcommand("tk::mac::ShowPreferences", CinemaApplication.show_preferences_dialog)
 

@@ -13,6 +13,7 @@ class CinemaApplication(Tk):
         and then creates and inserts the new frame that is specified."""
         if self.current_window:
             # delete current window
+            self.unbind("<Configure>")  # If a resize callback was bound, unbind it
             self.current_window.grid_forget()
             self.current_window.destroy()
 
@@ -20,6 +21,12 @@ class CinemaApplication(Tk):
         self.current_window.grid(row=0, column=0, sticky="nsew")
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
+
+        # If the window has a resize callback, bind it to the root window
+        try:
+            self.bind("<Configure>", self.current_window.resize)
+        except AttributeError:
+            pass
 
         self.resizable(resizeable, resizeable)
 
