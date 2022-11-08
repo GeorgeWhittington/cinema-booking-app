@@ -2,6 +2,7 @@ from functools import partial
 from tkinter import Tk, ttk, Menu
 
 from database_models import session_scope, Authority
+from windows import FilmWindow
 
 
 class CinemaApplication(Tk):
@@ -16,7 +17,9 @@ class CinemaApplication(Tk):
             self.current_window.destroy()
 
         self.current_window = window(self)
-        self.current_window.grid(row=0, column=0)
+        self.current_window.grid(row=0, column=0, sticky="nsew")
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
 
         self.resizable(resizeable, resizeable)
 
@@ -37,6 +40,7 @@ class CinemaApplication(Tk):
         self.menu_edit = Menu(self.menubar)
         self.menubar.add_cascade(menu=self.menu_file, label="File")
         self.menubar.add_cascade(menu=self.menu_edit, label="Edit")
+        # TODO: add "About" option which credits any assets used (Images and fontawesome icons) and the coders (Us two!)
 
         # As and when the windows are built replace with code similar to:
         # self.menu_file.add_command(label="New Booking", command=partial(self.switch_window, self, MainWindow))
@@ -58,12 +62,13 @@ class CinemaApplication(Tk):
             self.menu_file.add_command(label="New Report", command=partial(print, "New Report"))
 
             self.menu_edit.add_separator()
-            self.menu_edit.add_command(label="Update/Delete Films", command=partial(print, "Update/Delete Films"))
-            self.menu_edit.add_command(label="Update/Delete Films", command=partial(print, "Update/Delete Film Showings"))
+            self.menu_edit.add_command(label="Update/Delete Films", command=partial(self.switch_window, FilmWindow))
+            self.menu_edit.add_command(label="Update/Delete Film Showings", command=partial(print, "Update/Delete Film Showings"))
 
             if self.current_user.authority == Authority.ADMIN:
                 return
 
+            # Not Admin, so must be manager
             self.menu_file.add_separator()
             self.menu_file.add_command(label="New Location", command=partial(print, "New Location"))
 

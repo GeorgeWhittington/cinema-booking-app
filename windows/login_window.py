@@ -34,10 +34,10 @@ class LoginWindow(ttk.Frame):
             user = session.query(User).filter_by(username=self.username_entry.get()).first()
 
             if user.verify_password(self.password_entry.get()):
-                print("Password matches")
                 self.master.current_user = user
                 self.master.add_menu()
                 self.master.switch_window(MainWindow)
                 return
             
+            # TODO: Popup saying this instead
             print("Invalid password, please try again")
