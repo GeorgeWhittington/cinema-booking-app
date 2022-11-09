@@ -95,6 +95,8 @@ class CinemaApplication(Tk):
         # TODO: Consider making a Modal class that all modals need to subclass
         # from and exporting some of this logic there (especially dismiss)
         dialog = Toplevel(self)
+        # set icon (using icon loaded for root window)
+        dialog.tk.call("wm", "iconphoto", dialog._w, self.icon_img)
 
         def dismiss():
             dialog.grab_release()

@@ -6,8 +6,8 @@ from database_models import session, User
 
 
 class LoginWindow(ttk.Frame):
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
 
         self.banner_image = ImageTk.PhotoImage(Image.open("assets/banner.jpg"))
         self.img_label = ttk.Label(self, image=self.banner_image)

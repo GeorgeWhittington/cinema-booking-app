@@ -1,7 +1,5 @@
 from datetime import datetime, timedelta
-from io import BytesIO
 
-from cairosvg import svg2png
 from tkinter import ttk, messagebox, Text, Listbox, StringVar
 from PIL import ImageTk, Image
 
@@ -30,6 +28,7 @@ class FilmEditWindow(ttk.Frame):
             self.film = kwargs.pop("film")
             parent.title(f"Edit Film - {self.film.title}")
 
+        kwargs["padding"] = (3, 3, 3, 3)
         super().__init__(parent, *args, **kwargs)
 
         # Widget Creation
@@ -82,8 +81,8 @@ class FilmEditWindow(ttk.Frame):
         ]
 
         for y, (label, entry) in enumerate(widgets):
-            label.grid(column=0, row=y, sticky="w")
-            entry.grid(column=1, row=y, sticky="ew")
+            label.grid(column=0, row=y, pady=2, sticky="w")
+            entry.grid(column=1, row=y, pady=2, sticky="ew")
 
         self.submit_button.grid(column=1, row=len(widgets))
 
@@ -204,6 +203,7 @@ class FilmEditWindow(ttk.Frame):
 class FilmWindow(ttk.Frame):
     """Window which allows for Admins and Managers to: inspect, add, update and delete films."""
     def __init__(self, parent, *args, **kwargs):
+        kwargs["padding"] = (3, 3, 3, 3)
         super().__init__(parent, *args, **kwargs)
 
         self.inspected_film_id = None
@@ -249,24 +249,24 @@ class FilmWindow(ttk.Frame):
         # --- Buttons ---
         self.button_frame = ttk.Frame(self)
 
-        self.add_icon = self.create_icon("assets/plus-solid.svg")
+        self.add_icon = ImageTk.PhotoImage(Image.open("assets/plus-solid.png").resize((15, 15)))
         self.add_film_button = ttk.Button(
             self.button_frame, text="Add", image=self.add_icon,
             compound="left", command=self.add_film)
 
-        self.delete_icon = self.create_icon("assets/trash-solid.svg")
+        self.delete_icon = ImageTk.PhotoImage(Image.open("assets/trash-solid.png").resize((15, 15)))
         self.delete_film_button = ttk.Button(
             self.button_frame, text="Delete", image=self.delete_icon,
             compound="left", command=self.delete_film)
         self.delete_film_button.state(["disabled"])  # Requires a selection to work, begins disabled
 
-        self.update_icon = self.create_icon("assets/pen-solid.svg")
+        self.update_icon = ImageTk.PhotoImage(Image.open("assets/pen-solid.png").resize((15, 15)))
         self.update_film_button = ttk.Button(
             self.button_frame, text="Update", image=self.update_icon,
             compound="left", command=self.update_film)
         self.update_film_button.state(["disabled"])  # Requires a selection to work, begins disabled
 
-        self.view_icon = self.create_icon("assets/eye-solid.svg")
+        self.view_icon = ImageTk.PhotoImage(Image.open("assets/eye-solid.png").resize((15, 15)))
         self.view_showings_button = ttk.Button(
             self.button_frame, text="View Showings", image=self.view_icon,
             compound="left", command=self.view_film_showings)
@@ -288,13 +288,6 @@ class FilmWindow(ttk.Frame):
         self.columnconfigure(0, weight=1)
 
     @staticmethod
-    def create_icon(url):
-        """Converts an svg icon file to a png of 15x15 pixels in PIL's tkinter object."""
-        out = BytesIO()
-        svg2png(url=url, write_to=out)
-        return ImageTk.PhotoImage(Image.open(out).resize((15, 15)))
-
-    @staticmethod
     def replace_label(label, new_value):
         """Edits a label widget so that new_value is displayed after it's first ':'"""
         current_text = label["text"]
@@ -311,8 +304,8 @@ class FilmWindow(ttk.Frame):
                 film.title,
                 film.year_published,
                 film.age_rating.value,
-                f"{int(h)}h {int(m)}m",
-                f"{int(film.rating * 100)}/100"))
+                film.string_conv("duration"),
+                film.string_conv("rating")))
 
     def treeview_sort(self):
         """Sort treeview by Title column."""
@@ -348,12 +341,12 @@ class FilmWindow(ttk.Frame):
 
         self.replace_label(self.inspect_title, selected_film.title)
         self.replace_label(self.inspect_year, selected_film.year_published)
-        self.replace_label(self.inspect_rating, f"{int(selected_film.rating * 100)}/100")
+        self.replace_label(self.inspect_rating, selected_film.string_conv("rating"))
         self.replace_label(self.inspect_age_rating, selected_film.age_rating.value)
-        self.replace_label(self.inspect_duration, f"{int(h)}h {int(m)}m")
+        self.replace_label(self.inspect_duration, selected_film.string_conv("duration"))
         self.replace_label(self.inspect_synopsis, selected_film.synopsis)
         self.replace_label(self.inspect_cast, selected_film.cast)
-        self.replace_label(self.inspect_genres, ", ".join(genre.name for genre in selected_film.genres))
+        self.replace_label(self.inspect_genres, selected_film.string_conv("genres"))
 
     def resize(self, event):
         """Listens to configure events on this window.
@@ -440,8 +433,8 @@ class FilmWindow(ttk.Frame):
         self.treeview.set(iid, 0, film.title)
         self.treeview.set(iid, 1, film.year_published)
         self.treeview.set(iid, 2, film.age_rating.value)
-        self.treeview.set(iid, 3, f"{int(h)}h {int(m)}m")
-        self.treeview.set(iid, 4, f"{int(film.rating * 100)}/100")
+        self.treeview.set(iid, 3, film.string_conv("duration"))
+        self.treeview.set(iid, 4, film.string_conv("rating"))
 
         # Sort tree incase title changed
         self.treeview_sort()
