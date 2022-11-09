@@ -12,7 +12,7 @@ class Showing(Base):
     id = Column(Integer, primary_key=True)
     screen_id = Column(Integer, ForeignKey("screen.id"))
     film_id = Column(Integer, ForeignKey("film.id"))
-    # Only recording start time since pricing is based on that 
+    # Only recording start time since pricing is based on that
     # e.g. starts at 11:00 at morning price, even though it ends in afternoon range
     show_time = Column(DateTime, nullable=False)
 

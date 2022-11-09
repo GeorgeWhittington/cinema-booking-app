@@ -8,8 +8,8 @@ from database_models import Base
 
 class Booking(Base):
     """A booking to see a showing of a film.
-    
-    Card details are not stored in database, they are "sent" to 
+
+    Card details are not stored in database, they are "sent" to
     payment handler securely.
     """
     __tablename__ = "booking"
@@ -40,7 +40,7 @@ class Booking(Base):
         elif time(17, 0, 0) <= self.showing.show_time <= time(24, 0, 0):
             # Starts between 5pm-12am
             base_price = city.evening_price
-        
+
         price = base_price * self.lower_booked
         price += base_price * self.upper_booked * 1.2
         price += (base_price * self.vip_booked * 1.2) * 1.2

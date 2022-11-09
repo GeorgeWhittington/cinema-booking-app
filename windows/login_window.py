@@ -2,7 +2,7 @@ from tkinter import ttk
 from PIL import ImageTk, Image
 
 from windows import MainWindow
-from database_models import session_scope, User
+from database_models import session, User
 
 
 class LoginWindow(ttk.Frame):
@@ -30,14 +30,13 @@ class LoginWindow(ttk.Frame):
         self.columnconfigure(1, weight=1)
 
     def click_login(self):
-        with session_scope() as session:
-            user = session.query(User).filter_by(username=self.username_entry.get()).first()
+        user = session.query(User).filter_by(username=self.username_entry.get()).first()
 
-            if user.verify_password(self.password_entry.get()):
-                self.master.current_user = user
-                self.master.add_menu()
-                self.master.switch_window(MainWindow)
-                return
-            
-            # TODO: Popup saying this instead
-            print("Invalid password, please try again")
+        if user.verify_password(self.password_entry.get()):
+            self.master.current_user = user
+            self.master.add_menu()
+            self.master.switch_window(MainWindow)
+            return
+
+        # TODO: Popup saying this instead
+        print("Invalid password, please try again")
