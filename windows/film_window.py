@@ -66,7 +66,9 @@ class FilmEditWindow(ttk.Frame):
         self.genre_choices = StringVar(value=[genre.name for genre in self.all_genres])
         self.genres_entry = Listbox(self, listvariable=self.genre_choices, height=5, selectmode="extended")
 
-        self.submit_button = ttk.Button(self, text=self.edit_type, command=self.submit)
+        self.button_frame = ttk.Frame(self)
+        self.submit_button = ttk.Button(self.button_frame, text=self.edit_type, command=self.submit)
+        self.cancel_button = ttk.Button(self.button_frame, text="Cancel", command=self.dismiss)
 
         # Gridding
         widgets = [
@@ -84,7 +86,9 @@ class FilmEditWindow(ttk.Frame):
             label.grid(column=0, row=y, pady=2, sticky="w")
             entry.grid(column=1, row=y, pady=2, sticky="ew")
 
-        self.submit_button.grid(column=1, row=len(widgets))
+        self.button_frame.grid(column=1, row=len(widgets))
+        self.submit_button.grid(column=0, row=0)
+        self.cancel_button.grid(column=1, row=0)
 
         self.duration_hours.grid(column=0, row=0)
         self.hours_label.grid(column=1, row=0)

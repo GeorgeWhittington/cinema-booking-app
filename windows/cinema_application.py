@@ -2,7 +2,7 @@ from functools import partial
 from tkinter import Tk, ttk, Menu, Toplevel
 
 from database_models import session, Authority
-from windows import FilmWindow
+from windows import FilmWindow, GenreWindow
 
 
 class CinemaApplication(Tk):
@@ -49,7 +49,7 @@ class CinemaApplication(Tk):
         # TODO: add "About" option which credits any assets used (Images and fontawesome icons) and the coders (Us two!)
 
         # As and when the windows are built replace with code similar to:
-        # self.menu_file.add_command(label="New Booking", command=partial(self.switch_window, self, MainWindow))
+        # self.menu_file.add_command(label="New Booking", command=partial(self.switch_window, MainWindow))
         self.menu_file.add_command(label="New Booking", command=partial(print, "New Booking"))
         self.menu_edit.add_command(label="Cancel Booking", command=partial(print, "Cancel Booking"))
 
@@ -62,23 +62,19 @@ class CinemaApplication(Tk):
 
         # Authority not booking, so must have atleast admin permissions
         self.menu_file.add_separator()
-        self.menu_file.add_command(label="New Film", command=partial(print, "New Film"))
-        self.menu_file.add_command(label="New Film Showing", command=partial(print, "New Film Showing"))
         self.menu_file.add_command(label="New Report", command=partial(print, "New Report"))
 
         self.menu_edit.add_separator()
-        self.menu_edit.add_command(label="Update/Delete Films", command=partial(self.switch_window, FilmWindow))
-        self.menu_edit.add_command(label="Update/Delete Film Showings", command=partial(print, "Update/Delete Film Showings"))
+        self.menu_edit.add_command(label="Edit Films", command=partial(self.switch_window, FilmWindow))
+        self.menu_edit.add_command(label="Edit Film Showings", command=partial(print, "Edit Film Showings"))
+        self.menu_edit.add_command(label="Edit Film Genres", command=partial(self.switch_window, GenreWindow, resizeable=False))
 
         if self.current_user.authority == Authority.ADMIN:
             return
 
         # Not Admin, so must be manager
-        self.menu_file.add_separator()
-        self.menu_file.add_command(label="New Location", command=partial(print, "New Location"))
-
         self.menu_edit.add_separator()
-        self.menu_edit.add_command(label="Update/Delete Locations", command=partial(print, "Update/Delete Locations"))
+        self.menu_edit.add_command(label="Edit Locations", command=partial(print, "Update/Delete Locations"))
 
     def show_modal(self, window: ttk.Frame, window_kwargs: dict):
         """Creates a popup window containing the frame specified.
