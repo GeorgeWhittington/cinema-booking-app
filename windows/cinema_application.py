@@ -4,7 +4,7 @@ from tkinter import Tk, ttk, Menu, Toplevel
 from PIL import ImageTk, Image
 
 from database_models import session, Authority
-from windows import FilmWindow, GenreWindow
+from windows import FilmShowingWindow, FilmWindow, GenreWindow
 
 
 class CinemaApplication(Tk):
@@ -77,7 +77,7 @@ class CinemaApplication(Tk):
 
         self.menu_edit.add_separator()
         self.menu_edit.add_command(label="Edit Films", command=partial(self.switch_window, FilmWindow))
-        self.menu_edit.add_command(label="Edit Film Showings", command=partial(print, "Edit Film Showings"))
+        self.menu_edit.add_command(label="Edit Film Showings", command=partial(self.switch_window, FilmShowingWindow))
         self.menu_edit.add_command(label="Edit Film Genres", command=partial(self.switch_window, GenreWindow, resizeable=False))
 
         if self.current_user.authority == Authority.ADMIN:

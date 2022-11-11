@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from database_models import Base
@@ -8,6 +8,7 @@ class Screen(Base):
     __tablename__ = "screen"
 
     id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
     cinema_id = Column(Integer, ForeignKey("cinema.id"))
     lower_capacity = Column(Integer, nullable=False)
     upper_capacity = Column(Integer, nullable=False)
