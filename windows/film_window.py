@@ -253,26 +253,22 @@ class FilmWindow(ttk.Frame):
         # --- Buttons ---
         self.button_frame = ttk.Frame(self)
 
-        self.add_icon = ImageTk.PhotoImage(Image.open("assets/plus-solid.png").resize((15, 15)))
         self.add_film_button = ttk.Button(
-            self.button_frame, text="Add", image=self.add_icon,
+            self.button_frame, text="Add", image=parent.add_icon,
             compound="left", command=self.add_film)
 
-        self.delete_icon = ImageTk.PhotoImage(Image.open("assets/trash-solid.png").resize((15, 15)))
         self.delete_film_button = ttk.Button(
-            self.button_frame, text="Delete", image=self.delete_icon,
+            self.button_frame, text="Delete", image=parent.delete_icon,
             compound="left", command=self.delete_film)
         self.delete_film_button.state(["disabled"])  # Requires a selection to work, begins disabled
 
-        self.update_icon = ImageTk.PhotoImage(Image.open("assets/pen-solid.png").resize((15, 15)))
         self.update_film_button = ttk.Button(
-            self.button_frame, text="Update", image=self.update_icon,
+            self.button_frame, text="Update", image=parent.update_icon,
             compound="left", command=self.update_film)
         self.update_film_button.state(["disabled"])  # Requires a selection to work, begins disabled
 
-        self.view_icon = ImageTk.PhotoImage(Image.open("assets/eye-solid.png").resize((15, 15)))
         self.view_showings_button = ttk.Button(
-            self.button_frame, text="View Showings", image=self.view_icon,
+            self.button_frame, text="View Showings", image=parent.view_icon,
             compound="left", command=self.view_film_showings)
 
         # --- Gridding ---
@@ -297,7 +293,7 @@ class FilmWindow(ttk.Frame):
         current_text = label["text"]
         # We only care about splitting to get the data before the first ':'
         key, _ = current_text.split(":", maxsplit=1)
-        label.config(text=f"{key}: {new_value}")
+        label["text"] = f"{key}: {new_value}"
 
     def treeview_insert(self, film):
         h, m = get_hours_minutes(film.duration.total_seconds())
@@ -392,7 +388,7 @@ class FilmWindow(ttk.Frame):
             return
 
         confirm = messagebox.askyesno(
-            message=f"Are you sure you want to delete the film {selected_film.title}?",
+            message=f"Are you sure you want to delete the film '{selected_film.title}'?",
             title="Delete", icon="question")
 
         if not confirm:

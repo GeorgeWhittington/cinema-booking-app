@@ -1,11 +1,22 @@
 from functools import partial
 from tkinter import Tk, ttk, Menu, Toplevel
 
+from PIL import ImageTk, Image
+
 from database_models import session, Authority
 from windows import FilmWindow, GenreWindow
 
 
 class CinemaApplication(Tk):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Load icon assets for use throughout application
+        self.add_icon = ImageTk.PhotoImage(Image.open("assets/plus-solid.png").resize((15, 15)))
+        self.delete_icon = ImageTk.PhotoImage(Image.open("assets/trash-solid.png").resize((15, 15)))
+        self.update_icon = ImageTk.PhotoImage(Image.open("assets/pen-solid.png").resize((15, 15)))
+        self.view_icon = ImageTk.PhotoImage(Image.open("assets/eye-solid.png").resize((15, 15)))
+
     def switch_window(self, window: ttk.Frame, resizeable: bool = True):
         """Replaces window content.
 
