@@ -1,5 +1,6 @@
 from functools import partial
 from tkinter import Tk, ttk, Menu, Toplevel
+from typing import Optional
 
 from PIL import ImageTk, Image
 
@@ -17,7 +18,7 @@ class CinemaApplication(Tk):
         self.update_icon = ImageTk.PhotoImage(Image.open("assets/pen-solid.png").resize((15, 15)))
         self.view_icon = ImageTk.PhotoImage(Image.open("assets/eye-solid.png").resize((15, 15)))
 
-    def switch_window(self, window: ttk.Frame, resizeable: bool = True):
+    def switch_window(self, window: ttk.Frame, resizeable: bool = True, kwargs: Optional[dict] = None):
         """Replaces window content.
 
         Clears the current contents of the window (if there are any)
@@ -28,7 +29,11 @@ class CinemaApplication(Tk):
             self.current_window.grid_forget()
             self.current_window.destroy()
 
-        self.current_window = window(self)
+        if kwargs:
+            self.current_window = window(self, **kwargs)
+        else:
+            self.current_window = window(self)
+
         self.current_window.grid(row=0, column=0, sticky="nsew")
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)

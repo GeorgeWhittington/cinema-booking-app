@@ -6,6 +6,7 @@ from PIL import ImageTk, Image
 from database_models import session, Film, Genre, AgeRatings
 from misc.constants import OLDEST_FILM_YEAR, LONGEST_FILM_HOURS
 from misc.utils import get_hours_minutes
+from windows import FilmShowingWindow
 
 
 class FilmWindow(ttk.Frame):
@@ -253,7 +254,17 @@ class FilmWindow(ttk.Frame):
 
     def view_film_showings(self):
         """Callback for view showings button."""
-        pass
+        try:
+            selected_id = int(self.treeview.selection()[0])
+        except IndexError:
+            self.master.switch_window(FilmShowingWindow)
+            return
+
+        film = session.query(Film).get(selected_id)
+        if not film:
+            return
+
+        self.master.switch_window(FilmShowingWindow, kwargs={"film_filter": film.id})
 
 
 class FilmEditDialog(ttk.Frame):
