@@ -1,5 +1,6 @@
-import re
+from collections import namedtuple
 from datetime import datetime, time
+import re
 
 from tkinter import ttk, messagebox, font
 from tkcalendar import Calendar
@@ -11,6 +12,8 @@ film_regex = re.compile(r"(?P<title>.*) \((?P<year_published>\d{4})\)")
 film_format = "{0.title} ({0.year_published})"
 midnight = time(hour=0, minute=0)
 eight_am = time(hour=8, minute=0)
+
+ShowTime = namedtuple("ShowTime", ["start_datetime", "end_datetime", "valid"])
 
 
 class FilmShowingWindow(ttk.Frame):
@@ -216,7 +219,9 @@ class FilmShowingWindow(ttk.Frame):
             return showing
 
     def add_showing(self):
-        self.master.show_modal(FilmShowingEditDialog, {"edit_type": ADD})
+        added = self.master.show_modal(FilmShowingEditDialog, {"edit_type": ADD})
+        if added:
+            self.populate_treeview()
 
     def delete_showing(self):
         if not (selected_id := self.check_selection()):
@@ -245,13 +250,13 @@ class FilmShowingWindow(ttk.Frame):
         if not (showing := self.check_showing_exists(selected_id)):
             return
 
-        self.master.show_modal(FilmShowingEditDialog, {
+        updated = self.master.show_modal(FilmShowingEditDialog, {
             "edit_type": EDIT,
             "showing": showing
         })
 
-        # pop up add/delete dialog
-        # if it's result is True something has changed, so run self.populate_treeview()
+        if updated:
+            self.populate_treeview()
 
 
 class FilmShowingEditDialog(ttk.Frame):
@@ -396,12 +401,26 @@ class FilmShowingEditDialog(ttk.Frame):
         # 1ms
         self.after(1, self.recalc_show_end, None)
 
+    def calc_show_start_end(self, film, hour, minute):
+        selected_date = self.show_date_calendar.selection_get()
+
+        # timedelta addition requires datetime object, comparisons further down
+        # require time objects, hence 4 different values
+        start_time = time(hour=hour, minute=minute)
+        start_datetime = datetime.combine(selected_date, start_time)
+        end_datetime = film.duration + start_datetime
+        end_time = time(hour=end_datetime.hour, minute=end_datetime.minute)
+
+        if start_time > midnight and start_time < eight_am or\
+                end_time > midnight and end_time < eight_am:
+            # starts or ends during closed hours, not a valid showtime
+            return ShowTime(start_datetime, end_datetime, False)
+        else:
+            return ShowTime(start_datetime, end_datetime, True)
+
     def recalc_show_end(self, event):
         """Called whenever something to do with show time is changed,
         the show end time is updated using this new data."""
-        self.show_date_data_label["text"] = self.show_date_calendar.get_date()
-        selected_date = self.show_date_calendar.selection_get()
-
         match = film_regex.match(self.film_combobox.get())
 
         if not match:
@@ -420,21 +439,57 @@ class FilmShowingEditDialog(ttk.Frame):
         except ValueError:
             return
 
-        # timedelta addition requires datetime object, comparisons further down
-        # require time objects, hence 4 different values
-        start_time = time(hour=hour, minute=minute)
-        start_datetime = datetime.combine(selected_date, start_time)
-        end_datetime = film.duration + start_datetime
-        end_time = time(hour=end_datetime.hour, minute=end_datetime.minute)
+        show_times = self.calc_show_start_end(film, hour, minute)
+        self.show_time_label_3["text"] = show_times.end_datetime.strftime("%H:%M")
 
-        self.show_time_label_3["text"] = end_datetime.strftime("%H:%M")
-
-        if start_time > midnight and start_time < eight_am or\
-                end_time > midnight and end_time < eight_am:
+        if show_times.valid:
+            self.show_time_label_3.config({"foreground": "black"})
+        else:
             # starts or ends during closed hours, not a valid showtime
             self.show_time_label_3.config({"foreground": "red"})
-        else:
-            self.show_time_label_3.config({"foreground": "black"})
 
     def submit(self):
-        pass
+        match = film_regex.match(self.film_combobox.get())
+        if not match:
+            messagebox.showerror(title="Error", message="Please select a film")
+            return
+
+        film = session.query(Film).filter_by(
+            title=match.group("title"),
+            year_published=match.group("year_published")).first()
+        if not film:
+            messagebox.showerror(title="Error", message="That film no longer exists")
+            return
+
+        cinema = session.query(Cinema).filter_by(name=self.cinema_combobox.get()).first()
+        if not cinema:
+            messagebox.showerror(title="Error", message="Please select a cinema")
+            return
+
+        screen = session.query(Screen).filter_by(cinema=cinema, name=self.screen_combobox.get()).first()
+        if not screen:
+            messagebox.showerror(title="Error", message="Please select a screen at the cinema")
+            return
+
+        try:
+            hour = int(self.show_time_spinbox_hour.get())
+            minute = int(self.show_time_spinbox_minute.get())
+        except ValueError:
+            messagebox.showerror(title="Error", message="Please select a start time")
+            return
+
+        show_times = self.calc_show_start_end(film, hour, minute)
+        if not show_times.valid:
+            messagebox.showerror(title="Error", message="Film showings cannot start before 8am or end after midnight due to cinema opening hours")
+            return
+
+        if self.edit_type == ADD:
+            session.add(Showing(screen=screen, film=film, show_time=show_times.start_datetime))
+        elif self.edit_type == EDIT:
+            self.showing.screen = screen
+            self.showing.film = film
+            self.showing.show_time = show_times.start_datetime
+
+        session.commit()
+        self.result = True
+        self.dismiss()

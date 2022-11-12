@@ -21,22 +21,24 @@ class GenreWindow(ttk.Frame):
         self.new_name_label = ttk.Label(self, text="New Genre Name:")
         self.new_name_entry = ttk.Entry(self)
 
+        self.button_frame = ttk.Frame(self)
+
         self.add_genre_button = ttk.Button(
-            self, text="Add", image=parent.add_icon,
+            self.button_frame, text="Add", image=parent.add_icon,
             compound="left", command=self.add_genre)
 
         self.delete_genre_button = ttk.Button(
-            self, text="Delete", image=parent.delete_icon,
+            self.button_frame, text="Delete", image=parent.delete_icon,
             compound="left", command=self.delete_genre)
         self.delete_genre_button.state(["disabled"])  # Requires a selection to work, begins disabled
 
         self.update_genre_button = ttk.Button(
-            self, text="Update", image=parent.update_icon,
+            self.button_frame, text="Update", image=parent.update_icon,
             compound="left", command=self.update_genre)
         self.update_genre_button.state(["disabled"])  # Requires a selection to work, begins disabled
 
         # Gridding
-        self.genre_listbox.grid(column=0, row=0, rowspan=5, sticky="nsew")
+        self.genre_listbox.grid(column=0, row=0, rowspan=3, sticky="nsew")
 
         self.selected_name_label_1.grid(column=1, row=0, padx=(3, 0), sticky="w")
         self.selected_name_label_2.grid(column=2, row=0, sticky="w")
@@ -44,19 +46,19 @@ class GenreWindow(ttk.Frame):
         self.new_name_label.grid(column=1, row=1, padx=(3, 0), sticky="w")
         self.new_name_entry.grid(column=2, row=1, sticky="ew")
 
-        self.add_genre_button.grid(column=1, row=2, padx=(3, 0), columnspan=2, sticky="nsew")
-        self.delete_genre_button.grid(column=1, row=3, padx=(3, 0), columnspan=2, sticky="nsew")
-        self.update_genre_button.grid(column=1, row=4, padx=(3, 0), columnspan=2, sticky="nsew")
+        self.button_frame.grid(column=1, row=2, padx=(3, 0), columnspan=2, sticky="n")
 
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=1)
-        self.columnconfigure(2, weight=6)
+        self.add_genre_button.grid(column=0, row=0)
+        self.delete_genre_button.grid(column=1, padx=(3, 0), row=0)
+        self.update_genre_button.grid(column=2, padx=(3, 0), row=0)
 
-        self.rowconfigure(0, weight=1)
-        self.rowconfigure(1, weight=1)
-        self.rowconfigure(2, weight=2)
-        self.rowconfigure(3, weight=2)
-        self.rowconfigure(4, weight=2)
+        self.columnconfigure(0, weight=0)
+        self.columnconfigure(1, weight=0)
+        self.columnconfigure(2, weight=1)
+
+        self.rowconfigure(0, weight=0)
+        self.rowconfigure(1, weight=0)
+        self.rowconfigure(2, weight=1)
 
     def unselect(self):
         """Clear selection."""

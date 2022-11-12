@@ -64,8 +64,6 @@ class CinemaApplication(Tk):
         self.menubar.add_cascade(menu=self.menu_edit, label="Edit")
         # TODO: add "About" option which credits any assets used (Images and fontawesome icons) and the coders (Us two!)
 
-        # As and when the windows are built replace with code similar to:
-        # self.menu_file.add_command(label="New Booking", command=partial(self.switch_window, MainWindow))
         self.menu_file.add_command(label="New Booking", command=partial(print, "New Booking"))
         self.menu_edit.add_command(label="Cancel Booking", command=partial(print, "Cancel Booking"))
 
@@ -83,7 +81,7 @@ class CinemaApplication(Tk):
         self.menu_edit.add_separator()
         self.menu_edit.add_command(label="Edit Films", command=partial(self.switch_window, FilmWindow))
         self.menu_edit.add_command(label="Edit Film Showings", command=partial(self.switch_window, FilmShowingWindow))
-        self.menu_edit.add_command(label="Edit Film Genres", command=partial(self.switch_window, GenreWindow, resizeable=False))
+        self.menu_edit.add_command(label="Edit Film Genres", command=partial(self.switch_window, GenreWindow))
 
         if self.current_user.authority == Authority.ADMIN:
             return
