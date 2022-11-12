@@ -5,7 +5,7 @@ from typing import Optional
 from PIL import ImageTk, Image
 
 from database_models import session, Authority
-from windows import FilmShowingWindow, FilmWindow, GenreWindow
+from windows import FilmShowingWindow, FilmWindow, GenreWindow, ReportWindow
 
 
 class CinemaApplication(Tk):
@@ -76,7 +76,7 @@ class CinemaApplication(Tk):
 
         # Authority not booking, so must have atleast admin permissions
         self.menu_file.add_separator()
-        self.menu_file.add_command(label="New Report", command=partial(print, "New Report"))
+        self.menu_file.add_command(label="New Report", command=partial(self.switch_window, ReportWindow))
 
         self.menu_edit.add_separator()
         self.menu_edit.add_command(label="Edit Films", command=partial(self.switch_window, FilmWindow))
@@ -96,8 +96,8 @@ class CinemaApplication(Tk):
         The root window will be disabled while this popup is open.
 
         If the window object that gets instantiated sets the attribute
-        'result' before exiting using the dismiss function it is passed
-        that value will be returned.
+        'result' before exiting using the dismiss function then that value
+        will be returned.
 
         Adapted from the "Rolling Your Own" section at the bottom of
         this page: https://tkdocs.com/tutorial/windows.html

@@ -23,6 +23,7 @@ class User(Base):
     authority = Column(Enum(Authority), nullable=False)
 
     cinema = relationship("Cinema", back_populates="users")
+    bookings = relationship("Booking", back_populates="employee")
 
     def __repr__(self):
         return f"<User(id={self.id}, username={self.username}, authority={self.authority}, cinema={self.cinema})>"

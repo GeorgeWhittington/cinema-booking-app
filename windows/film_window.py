@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 from tkinter import ttk, messagebox, Text, Listbox, StringVar
-from PIL import ImageTk, Image
 
 from database_models import session, Film, Genre, AgeRatings
 from misc.constants import OLDEST_FILM_YEAR, LONGEST_FILM_HOURS, ADD, EDIT

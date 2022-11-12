@@ -16,6 +16,7 @@ class Booking(Base):
 
     id = Column(Integer, primary_key=True)
     showing_id = Column(Integer, ForeignKey("showing.id"))
+    employee_id = Column(Integer, ForeignKey("user.id"))
     lower_booked = Column(Integer, nullable=False)
     upper_booked = Column(Integer, nullable=False)
     vip_booked = Column(Integer, nullable=False)
@@ -24,6 +25,7 @@ class Booking(Base):
     email = Column(String, nullable=False)
 
     showing = relationship("Showing", back_populates="bookings")
+    employee = relationship("User", back_populates="bookings")  # Employee that booked these tickets
 
     def __repr__(self):
         return f"<Booking(id={self.id}, showing={self.showing})>"
@@ -31,13 +33,17 @@ class Booking(Base):
     def calculate_price(self):
         city = self.showing.screen.cinema.city
 
-        if time(8, 0, 0) <= self.showing.show_time < time(12, 0, 0):
+        show_time = time(
+            hour=self.showing.show_time.hour,
+            minute=self.showing.show_time.minute)
+
+        if time(8, 0, 0) <= show_time < time(12, 0, 0):
             # Starts between 8am-11:59am
             base_price = city.morning_price
-        elif time(12, 0, 0) <= self.showing.show_time < time(17, 0, 0):
+        elif time(12, 0, 0) <= show_time < time(17, 0, 0):
             # Starts between 12pm-4:59pm
             base_price = city.afternoon_price
-        elif time(17, 0, 0) <= self.showing.show_time <= time(24, 0, 0):
+        elif time(17, 0, 0) <= show_time <= time(23, 59, 59):
             # Starts between 5pm-12am
             base_price = city.evening_price
 

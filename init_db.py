@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from database_models import session, User, Cinema, City, Authority, Screen, Film, AgeRatings, Genre, Showing
+from database_models import session, User, Cinema, City, Authority, Screen, Film, AgeRatings, Genre, Showing, Booking
 
 if __name__ == "__main__":
     cities = {
@@ -74,6 +74,29 @@ if __name__ == "__main__":
         Showing(screen=screens[2], film=films[2], show_time=datetime(year=2022, month=11, day=20, hour=10)),
         Showing(screen=screens[2], film=films[3], show_time=datetime(year=2022, month=11, day=20, hour=12)),
         Showing(screen=screens[2], film=films[4], show_time=datetime(year=2022, month=11, day=20, hour=17))
+    ]
+    bookings = [
+        Booking(
+            showing=showings[0], employee=users[0], lower_booked=0, upper_booked=1, vip_booked=0,
+            name="Sally", phone="7348265873", email="sally@gmail.com"),
+        Booking(
+            showing=showings[0], employee=users[0], lower_booked=1, upper_booked=2, vip_booked=0,
+            name="James", phone="7348265873", email="james@gmail.com"),
+        Booking(
+            showing=showings[0], employee=users[1], lower_booked=3, upper_booked=0, vip_booked=0,
+            name="Nora", phone="7348265873", email="nora@gmail.com"),
+        Booking(
+            showing=showings[5], employee=users[1], lower_booked=0, upper_booked=0, vip_booked=3,
+            name="Mo", phone="7348265873", email="mohammed@gmail.com"),
+        Booking(
+            showing=showings[5], employee=users[0], lower_booked=1, upper_booked=2, vip_booked=0,
+            name="Sally", phone="7348265873", email="sally@gmail.com"),
+        Booking(
+            showing=showings[5], employee=users[0], lower_booked=0, upper_booked=0, vip_booked=4,
+            name="Sally", phone="7348265873", email="sally@gmail.com"),
+        Booking(
+            showing=showings[5], employee=users[2], lower_booked=0, upper_booked=1, vip_booked=1,
+            name="Sally", phone="7348265873", email="sally@gmail.com"),
     ]
 
     for row in list(cities.values()) + cinemas + users + screens + films + genres + showings:
