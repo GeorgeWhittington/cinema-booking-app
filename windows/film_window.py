@@ -4,7 +4,7 @@ from tkinter import ttk, messagebox, Text, Listbox, StringVar
 from PIL import ImageTk, Image
 
 from database_models import session, Film, Genre, AgeRatings
-from misc.constants import OLDEST_FILM_YEAR, LONGEST_FILM_HOURS
+from misc.constants import OLDEST_FILM_YEAR, LONGEST_FILM_HOURS, ADD, EDIT
 from misc.utils import get_hours_minutes
 from windows import FilmShowingWindow
 
@@ -181,7 +181,7 @@ class FilmWindow(ttk.Frame):
 
     def add_film(self):
         """Callback for add button."""
-        new_film = self.master.show_modal(FilmEditDialog, {"edit_type": FilmEditDialog.ADD})
+        new_film = self.master.show_modal(FilmEditDialog, {"edit_type": ADD})
         if not new_film:
             return
 
@@ -230,7 +230,7 @@ class FilmWindow(ttk.Frame):
             return
 
         self.master.show_modal(FilmEditDialog, {
-            "edit_type": FilmEditDialog.EDIT,
+            "edit_type": EDIT,
             "film": film
         })
 
@@ -273,17 +273,14 @@ class FilmEditDialog(ttk.Frame):
     If 'edit_type' is EDIT then the kwarg 'film' needs to be set to the
     film being edited.
     """
-    ADD = "Add"
-    EDIT = "Edit"
-
     def __init__(self, parent, *args, **kwargs):
         self.dismiss = kwargs.pop("dismiss")
         self.edit_type = kwargs.pop("edit_type")
 
-        if self.edit_type == FilmEditDialog.ADD:
+        if self.edit_type == ADD:
             parent.title("Add Film")
 
-        if self.edit_type == FilmEditDialog.EDIT:
+        if self.edit_type == EDIT:
             self.film = kwargs.pop("film")
             parent.title(f"Edit Film - {self.film.title}")
 
@@ -359,7 +356,7 @@ class FilmEditDialog(ttk.Frame):
         self.columnconfigure(1, weight=1)
 
         # Prefilling with existing values if an EDIT window
-        if self.edit_type == FilmEditDialog.ADD:
+        if self.edit_type == ADD:
             return
 
         self.title_entry.insert(0, self.film.title)
@@ -429,9 +426,9 @@ class FilmEditDialog(ttk.Frame):
         for sel_id in self.genres_entry.curselection():
             genres.append(self.all_genres[sel_id])
 
-        if self.edit_type == FilmEditDialog.ADD:
+        if self.edit_type == ADD:
             self.result = self.add_film(age_rating, genres)
-        elif self.edit_type == FilmEditDialog.EDIT:
+        elif self.edit_type == EDIT:
             self.edit_film(age_rating, genres)
 
         self.dismiss()
