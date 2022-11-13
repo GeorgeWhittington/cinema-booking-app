@@ -6,7 +6,9 @@ from database_models import Base
 
 class Showing(Base):
     """A showing of a film. Number of booked seats can be tracked by
-    querying the related bookings."""
+    querying the related bookings.
+
+    TODO: if a showing is deleted, that should cascade to it's bookings"""
     __tablename__ = "showing"
 
     id = Column(Integer, primary_key=True)

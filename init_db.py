@@ -68,7 +68,7 @@ if __name__ == "__main__":
             cast="Daveigh Chase, Suzanne Pleshette", genres=[genres[8], genres[6]])
     ]
     showings = [
-        Showing(screen=screens[0], film=films[0], show_time=datetime(year=2022, month=11, day=20, hour=11)),
+        Showing(screen=screens[0], film=films[0], show_time=datetime(year=2022, month=10, day=20, hour=11)),
         Showing(screen=screens[1], film=films[0], show_time=datetime(year=2022, month=11, day=20, hour=14)),
         Showing(screen=screens[1], film=films[0], show_time=datetime(year=2022, month=11, day=20, hour=18)),
         Showing(screen=screens[2], film=films[2], show_time=datetime(year=2022, month=11, day=20, hour=10)),

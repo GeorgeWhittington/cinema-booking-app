@@ -90,7 +90,7 @@ class CinemaApplication(Tk):
         self.menu_edit.add_separator()
         self.menu_edit.add_command(label="Edit Locations", command=partial(print, "Update/Delete Locations"))
 
-    def show_modal(self, window: ttk.Frame, window_kwargs: dict):
+    def show_modal(self, window: ttk.Frame, window_kwargs: Optional[dict] = None):
         """Creates a popup window containing the frame specified.
 
         The root window will be disabled while this popup is open.
@@ -111,6 +111,8 @@ class CinemaApplication(Tk):
         def dismiss():
             dialog.grab_release()
             dialog.destroy()
+
+        window_kwargs = {} if window_kwargs is None else window_kwargs
 
         dialog_frame = window(dialog, dismiss=dismiss, **window_kwargs)
         dialog_frame.grid(column=0, row=0, sticky="nsew")
