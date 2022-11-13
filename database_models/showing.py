@@ -22,3 +22,7 @@ class Showing(Base):
 
     def __repr__(self):
         return f"<Showing(id={self.id}, screen={self.screen}, film={self.film}, show_time={self.show_time})>"
+
+    @property
+    def show_end(self):
+        return self.show_time + self.film.duration

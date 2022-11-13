@@ -1,9 +1,11 @@
 from collections import namedtuple
 from datetime import datetime, time
+from functools import partial
 import re
 
-from tkinter import ttk, messagebox, font
+from tkinter import ttk, messagebox, font, BooleanVar
 from tkcalendar import Calendar
+from sqlalchemy.sql import and_
 
 from database_models import session, Showing, Cinema, Film, Screen
 from misc.constants import ADD, EDIT
@@ -21,6 +23,7 @@ class FilmShowingWindow(ttk.Frame):
     def __init__(self, parent, *args, **kwargs):
         self.film_filter = kwargs.pop("film_filter", None)
         self.cinema_filter = kwargs.pop("cinema_filter", None)
+        self.date_filter = None
 
         kwargs["padding"] = (3, 3, 3, 3)
         super().__init__(parent, *args, **kwargs)
@@ -69,6 +72,17 @@ class FilmShowingWindow(ttk.Frame):
             self.film_combobox.set("- All Films -")
         self.film_combobox.bind("<<ComboboxSelected>>", self.film_filter_change)
 
+        self.date_label = ttk.Label(self.filter_frame, text="Date")
+        self.date_checkbutton_value = BooleanVar(value=False)
+        self.date_checkbutton = ttk.Checkbutton(
+            self.filter_frame, text="Filter by Date", variable=self.date_checkbutton_value,
+            command=partial(self.date_filter_change, None))
+        self.date_calendar = Calendar(self.filter_frame,
+            locale="en_GB", background="white", foreground="black",
+            showweeknumbers=False, selectforeground="blue",
+            font=font.BOLD)
+        self.date_calendar.bind("<<CalendarSelected>>", self.date_filter_change)
+
         self.button_frame = ttk.Frame(self)
 
         self.add_showing_button = ttk.Button(
@@ -94,6 +108,10 @@ class FilmShowingWindow(ttk.Frame):
 
         self.film_label.grid(column=0, row=2, sticky="w")
         self.film_combobox.grid(column=0, row=3, sticky="ew")
+
+        self.date_label.grid(column=0, row=4, sticky="w")
+        self.date_checkbutton.grid(column=0, row=5, sticky="w")
+        self.date_calendar.grid(column=0, row=6, sticky="ew")
 
         self.button_frame.grid(column=0, row=1, columnspan=3, sticky="nsew")
 
@@ -122,7 +140,7 @@ class FilmShowingWindow(ttk.Frame):
 
         for showing in self.film_showing_query():
             start = showing.show_time
-            end = showing.show_time + showing.film.duration
+            end = showing.show_end
 
             self.treeview.insert(
                 "", "end", iid=showing.id,
@@ -130,7 +148,7 @@ class FilmShowingWindow(ttk.Frame):
                     film_format.format(showing.film),
                     showing.screen.cinema.name,
                     showing.screen.name,
-                    f"{start.strftime('%H:%M')} - {end.strftime('%H:%M')}"))
+                    f"{start.strftime('%d/%m/%Y')} {start.strftime('%H:%M')} - {end.strftime('%H:%M')}"))
 
     def film_showing_query(self):
         """Generates and executes a query collecting all film
@@ -143,6 +161,15 @@ class FilmShowingWindow(ttk.Frame):
 
         if self.cinema_filter:
             query = query.filter(Cinema.id == self.cinema_filter)
+
+        if self.date_filter:
+            day_beginning = datetime.combine(self.date_filter, time(hour=0, minute=0))
+            day_end = datetime.combine(self.date_filter, time(hour=23, minute=59))
+
+            query = query.filter(and_(
+                Showing.show_time >= day_beginning,
+                Showing.show_time <= day_end
+            ))
 
         return query.all()
 
@@ -198,6 +225,15 @@ class FilmShowingWindow(ttk.Frame):
             return
 
         self.film_filter = film.id
+        self.populate_treeview()
+
+    def date_filter_change(self, event):
+        if not self.date_checkbutton_value.get():
+            self.date_filter = None
+            self.populate_treeview()
+            return
+
+        self.date_filter = self.date_calendar.selection_get()
         self.populate_treeview()
 
     def check_selection(self):
@@ -483,8 +519,30 @@ class FilmShowingEditDialog(ttk.Frame):
             messagebox.showerror(title="Error", message="Film showings cannot start before 8am or end after midnight due to cinema opening hours")
             return
 
-        # TODO: Check that showing does not conflict with any other showings in that screen
+        # Check that showing does not conflict with any other showings in that screen
         # at that time
+        day_beginning = show_times.start_datetime.replace(hour=0, minute=0)
+        day_end = show_times.start_datetime.replace(hour=23, minute=59)
+
+        query = session.query(Showing).join(Showing.screen).filter(Screen.id == screen.id)
+        query = query.filter(and_(
+            Showing.show_time >= day_beginning,
+            Showing.show_time <= day_end
+        ))
+        screen_showings = query.all()  # Narrow search pool to showings on the same day in the same screen
+
+        for showing in screen_showings:
+            if self.edit_type == EDIT and self.showing == showing:
+                continue
+
+            if show_times.start_datetime >= showing.show_time and\
+                    show_times.start_datetime <= showing.show_end or\
+                    show_times.end_datetime >= showing.show_time and\
+                    show_times.end_datetime <= showing.show_end:
+
+                messagebox.showerror(title="Error",
+                message=f"The showing you wish to create that runs from {show_times.start_datetime.strftime('%H:%M')} to {show_times.end_datetime.strftime('%H:%M')} will conflict with an existing showing that runs from {showing.show_time.strftime('%H:%M')} to {showing.show_end.strftime('%H:%M')} in the same screen")
+                return
 
         if self.edit_type == ADD:
             session.add(Showing(screen=screen, film=film, show_time=show_times.start_datetime))
