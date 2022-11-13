@@ -1,4 +1,4 @@
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from PIL import ImageTk, Image
 
 from windows import MainWindow
@@ -38,5 +38,4 @@ class LoginWindow(ttk.Frame):
             self.master.switch_window(MainWindow)
             return
 
-        # TODO: Popup saying this instead
-        print("Invalid password, please try again")
+        messagebox.showerror(title="Please try again", message="Invalid password, please try again")

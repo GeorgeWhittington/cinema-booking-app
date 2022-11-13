@@ -83,7 +83,6 @@ class GenreWindow(ttk.Frame):
         genre = session.query(Genre).filter_by(name=genre_name).first()
         if not genre:
             messagebox.showerror(title="Error", message=f"The genre '{genre_name}' no longer exists")
-            # TODO: clear nonexistent value from listbox/listbox state (but really it shouldn't be possible for this to happen)
 
         return genre
 

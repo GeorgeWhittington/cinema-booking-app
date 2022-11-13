@@ -6,9 +6,7 @@ from database_models import Base
 
 class Showing(Base):
     """A showing of a film. Number of booked seats can be tracked by
-    querying the related bookings.
-
-    TODO: if a showing is deleted, that should cascade to it's bookings"""
+    querying the related bookings."""
     __tablename__ = "showing"
 
     id = Column(Integer, primary_key=True)
@@ -20,7 +18,7 @@ class Showing(Base):
 
     screen = relationship("Screen", back_populates="showings")
     film = relationship("Film", back_populates="showings")
-    bookings = relationship("Booking", back_populates="showing")
+    bookings = relationship("Booking", back_populates="showing", cascade="all, delete")
 
     def __repr__(self):
         return f"<Showing(id={self.id}, screen={self.screen}, film={self.film}, show_time={self.show_time})>"
