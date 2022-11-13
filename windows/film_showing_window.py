@@ -483,6 +483,9 @@ class FilmShowingEditDialog(ttk.Frame):
             messagebox.showerror(title="Error", message="Film showings cannot start before 8am or end after midnight due to cinema opening hours")
             return
 
+        # TODO: Check that showing does not conflict with any other showings in that screen
+        # at that time
+
         if self.edit_type == ADD:
             session.add(Showing(screen=screen, film=film, show_time=show_times.start_datetime))
         elif self.edit_type == EDIT:
