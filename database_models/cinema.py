@@ -6,7 +6,7 @@ from database_models import Base
 
 class Cinema(Base):
     """A cinema.
-    
+
     The prices at a cinema are determined by the city they are in.
     """
     __tablename__ = "cinema"

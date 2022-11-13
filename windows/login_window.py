@@ -1,15 +1,15 @@
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from PIL import ImageTk, Image
 
 from windows import MainWindow
-from database_models import session_scope, User
+from database_models import session, User
 
 
 class LoginWindow(ttk.Frame):
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
 
-        self.banner_image = ImageTk.PhotoImage(Image.open("assets/banner.jpg"))
+        self.banner_image = ImageTk.PhotoImage(Image.open("assets/banner.jpg").resize((666, 161)))
         self.img_label = ttk.Label(self, image=self.banner_image)
         self.img_label.grid(column=0, row=0, columnspan=2, sticky="ew")
 
@@ -30,14 +30,12 @@ class LoginWindow(ttk.Frame):
         self.columnconfigure(1, weight=1)
 
     def click_login(self):
-        with session_scope() as session:
-            user = session.query(User).filter_by(username=self.username_entry.get()).first()
+        user = session.query(User).filter_by(username=self.username_entry.get()).first()
 
-            if user.verify_password(self.password_entry.get()):
-                print("Password matches")
-                self.master.current_user = user
-                self.master.add_menu()
-                self.master.switch_window(MainWindow)
-                return
-            
-            print("Invalid password, please try again")
+        if user.verify_password(self.password_entry.get()):
+            self.master.current_user = user
+            self.master.add_menu()
+            self.master.switch_window(MainWindow)
+            return
+
+        messagebox.showerror(title="Please try again", message="Invalid password, please try again")

@@ -2,3 +2,5 @@ tk==0.1.0
 Pillow==9.2.0
 sqlalchemy==1.4.42
 bcrypt==4.0.1
+tkcalendar
+fpdf2

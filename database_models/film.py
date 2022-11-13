@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 
 from database_models import Base
 from database_models.m2m_tables import film_genre
+from misc.utils import get_hours_minutes
 
 
 class AgeRatings(enum.Enum):
@@ -32,3 +33,15 @@ class Film(Base):
 
     def __repr__(self):
         return f"<Film(id={self.id}, title={self.title}, year_published={self.year_published})>"
+
+    def string_conv(self, attr):
+        """When provided with the attribute of a film, converts it to its string formatted form."""
+        if attr == "rating":
+            return f"{int(self.rating * 100)}/100"
+        if attr == "duration":
+            h, m = get_hours_minutes(self.duration.total_seconds())
+            return f"{h}h {m}m"
+        if attr == "genres":
+            return ", ".join(genre.name for genre in self.genres)
+
+        return str(getattr(self, attr))

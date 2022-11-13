@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Numeric
+from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.orm import relationship
 
 from database_models import Base
@@ -9,9 +9,9 @@ class City(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)
-    morning_price = Column(Numeric, nullable=False)
-    afternoon_price = Column(Numeric, nullable=False)
-    evening_price = Column(Numeric, nullable=False)
+    morning_price = Column(Float, nullable=False)
+    afternoon_price = Column(Float, nullable=False)
+    evening_price = Column(Float, nullable=False)
 
     cinemas = relationship("Cinema", back_populates="city")
 
