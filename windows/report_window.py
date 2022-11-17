@@ -7,6 +7,7 @@ from sqlalchemy.sql import func, asc, desc, and_
 from prettytable import PrettyTable
 
 from database_models import session, Film, Showing, Booking, Cinema, Screen, User
+from misc import FILM_FORMAT
 
 
 class ReportWindow(ttk.Frame):
@@ -78,9 +79,22 @@ class ReportWindow(ttk.Frame):
         selected = list(ReportWindow.REPORT_TYPES.values())[selected]
 
         if selected == ReportWindow.REPORT_TYPES["BOOKINGS_PER_FILM"]:
-            lower = func.sum(Booking.lower_booked).label("lb")
-            upper = func.sum(Booking.upper_booked).label("ub")
-            vip = func.sum(Booking.vip_booked).label("vb")
+            """The equivalent sql for this sqlalchemy query:
+
+            SELECT
+                *,
+                SUM(booking.lower_booked) AS `lb`,
+                SUM(booking.upper_booked) AS `ub`,
+                SUM(booking.vip_booked) AS `vb`,
+                (`lb` + `ub` + `vb`) AS `total_b`
+            FROM film
+            INNER JOIN showing ON film.id = showing.film_id
+            INNER JOIN booking ON showing.id = booking.showing_id
+            GROUP BY film.id
+            ORDER BY DESC `total_b`"""
+            lower = func.sum(Booking.lower_booked)
+            upper = func.sum(Booking.upper_booked)
+            vip = func.sum(Booking.vip_booked)
 
             query = session.query(Film, lower, upper, vip, (lower + upper + vip).label("total_b"))
             query = query.join(Film.showings).join(Showing.bookings).group_by(Film.id)
@@ -89,7 +103,7 @@ class ReportWindow(ttk.Frame):
             table = PrettyTable()
             table.field_names = ["Film", "Lower Hall", "Upper Gallery", "VIP", "Total"]
             for film, *booking_values in query.all():
-                table.add_row([f"{film.title} ({film.year_published})", *booking_values])
+                table.add_row([FILM_FORMAT.format(film), *booking_values])
 
             self.save_to_pdf(title=selected, table=table.get_string(), default_filename="bookings per film")
         elif selected == ReportWindow.REPORT_TYPES["MONTHLY_REVENUE"]:
@@ -138,9 +152,10 @@ class ReportWindow(ttk.Frame):
 
             films = sorted(films, key=lambda f: f.total_revenue, reverse=True)
 
+            film_string = FILM_FORMAT.format(films[0])
             self.save_to_pdf(
                 title=selected,
-                table=f"{films[0].title} ({films[0].year_published}) has generated a total of £{films[0].total_revenue:.2f}",
+                table=f"{film_string} has generated a total of £{films[0].total_revenue:.2f}",
                 default_filename="top revenue film")
         elif selected == ReportWindow.REPORT_TYPES["EMPLOYEE_BOOKINGS"]:
             try:
@@ -150,6 +165,19 @@ class ReportWindow(ttk.Frame):
                 return
             month_start, month_end = self.get_month_start_end(month, year)
 
+            """Equivalent sql for this query is:
+
+            SELECT
+                *,
+                COUNT(booking.id) AS `booking_count`
+            FROM user
+            INNER JOIN booking ON user.id = booking.employee_id
+            INNER JOIN showing ON booking.showing_id = showing.id
+            WHERE
+                showing.show_time >= {month_start} AND
+                showing.show_time <= {month_end}
+            GROUP BY user.id
+            ORDER BY DESC `booking_count`"""
             query = session.query(User, func.count(Booking.id).label("booking_count"))
             query = query.join(User.bookings).join(Booking.showing)
             query = query.filter(and_(

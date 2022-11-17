@@ -8,12 +8,9 @@ from tkcalendar import Calendar
 from sqlalchemy.sql import and_
 
 from database_models import session, Showing, Cinema, Film, Screen
-from misc.constants import ADD, EDIT
+from misc.constants import ADD, EDIT, FILM_FORMAT, MIDNIGHT, EIGHT_AM
 
 film_regex = re.compile(r"(?P<title>.*) \((?P<year_published>\d{4})\)")
-film_format = "{0.title} ({0.year_published})"
-midnight = time(hour=0, minute=0)
-eight_am = time(hour=8, minute=0)
 
 ShowTime = namedtuple("ShowTime", ["start_datetime", "end_datetime", "valid"])
 
@@ -63,11 +60,11 @@ class FilmShowingWindow(ttk.Frame):
 
         self.film_label = ttk.Label(self.filter_frame, text="Film")
         self.film_combobox = ttk.Combobox(self.filter_frame)
-        self.film_combobox["values"] = ["- All Films -"] + [film_format.format(film) for film in session.query(Film).all()]
+        self.film_combobox["values"] = ["- All Films -"] + [FILM_FORMAT.format(film) for film in session.query(Film).all()]
         self.film_combobox.state(["readonly"])
         if self.film_filter:
             film = session.query(Film).get(self.film_filter)
-            self.film_combobox.set(film_format.format(film))
+            self.film_combobox.set(FILM_FORMAT.format(film))
         else:
             self.film_combobox.set("- All Films -")
         self.film_combobox.bind("<<ComboboxSelected>>", self.film_filter_change)
@@ -77,10 +74,17 @@ class FilmShowingWindow(ttk.Frame):
         self.date_checkbutton = ttk.Checkbutton(
             self.filter_frame, text="Filter by Date", variable=self.date_checkbutton_value,
             command=partial(self.date_filter_change, None))
-        self.date_calendar = Calendar(self.filter_frame,
-            locale="en_GB", background="white", foreground="black",
-            showweeknumbers=False, selectforeground="blue",
-            font=font.BOLD)
+        calendar_kwargs = {
+            "locale": "en_GB",
+            "showweeknumbers": False
+        }
+        if self.master.tk.call("tk", "windowingsystem") == "aqua":
+            # If on mac, add extra styling
+            calendar_kwargs["background"] = "white"
+            calendar_kwargs["foreground"] = "black"
+            calendar_kwargs["selectforeground"] = "blue"
+            calendar_kwargs["font"] = font.BOLD
+        self.date_calendar = Calendar(self.filter_frame, **calendar_kwargs)
         self.date_calendar.bind("<<CalendarSelected>>", self.date_filter_change)
 
         self.button_frame = ttk.Frame(self)
@@ -145,7 +149,7 @@ class FilmShowingWindow(ttk.Frame):
             self.treeview.insert(
                 "", "end", iid=showing.id,
                 values=(
-                    film_format.format(showing.film),
+                    FILM_FORMAT.format(showing.film),
                     showing.screen.cinema.name,
                     showing.screen.name,
                     f"{start.strftime('%d/%m/%Y')} {start.strftime('%H:%M')} - {end.strftime('%H:%M')}"))
@@ -266,7 +270,7 @@ class FilmShowingWindow(ttk.Frame):
         if not (showing := self.check_showing_exists(selected_id)):
             return
 
-        film_string = film_format.format(showing.film)
+        film_string = FILM_FORMAT.format(showing.film)
         choice = messagebox.askyesno(
             title="Delete", icon="question",
             message=f"Are you sure you want to delete this showing of {film_string} at {showing.screen.cinema.name}?")
@@ -321,7 +325,7 @@ class FilmShowingEditDialog(ttk.Frame):
         self.show_time_label = ttk.Label(self, text="Show Time:")
 
         self.film_combobox = ttk.Combobox(self)
-        self.film_combobox["values"] = [film_format.format(film) for film in session.query(Film).order_by(Film.title, Film.year_published).all()]
+        self.film_combobox["values"] = [FILM_FORMAT.format(film) for film in session.query(Film).order_by(Film.title, Film.year_published).all()]
         self.film_combobox.state(["readonly"])
         self.film_combobox.bind("<<ComboboxSelected>>", self.recalc_show_end)
 
@@ -335,10 +339,17 @@ class FilmShowingEditDialog(ttk.Frame):
 
         self.show_date_frame = ttk.Frame(self)
         self.show_date_data_label = ttk.Label(self.show_date_frame)
-        self.show_date_calendar = Calendar(self.show_date_frame,
-            locale="en_GB", background="white", foreground="black",
-            showweeknumbers=False, selectforeground="blue",
-            font=font.BOLD)
+        calendar_kwargs = {
+            "locale": "en_GB",
+            "showweeknumbers": False
+        }
+        if self.master.tk.call("tk", "windowingsystem") == "aqua":
+            # If on mac, add extra styling
+            calendar_kwargs["background"] = "white"
+            calendar_kwargs["foreground"] = "black"
+            calendar_kwargs["selectforeground"] = "blue"
+            calendar_kwargs["font"] = font.BOLD
+        self.show_date_calendar = Calendar(self.show_date_frame, **calendar_kwargs)
         self.show_date_calendar.bind("<<CalendarSelected>>", self.calendar_selected)
 
         self.show_time_frame = ttk.Frame(self)
@@ -394,7 +405,7 @@ class FilmShowingEditDialog(ttk.Frame):
             self.show_time_spinbox_hour.set("08")
             self.show_time_spinbox_minute.set("00")
         elif self.edit_type == EDIT:
-            self.film_combobox.set(film_format.format(self.showing.film))
+            self.film_combobox.set(FILM_FORMAT.format(self.showing.film))
             self.cinema_combobox.set(self.showing.screen.cinema.name)
 
             self.cinema_selected(None)
@@ -447,8 +458,8 @@ class FilmShowingEditDialog(ttk.Frame):
         end_datetime = film.duration + start_datetime
         end_time = time(hour=end_datetime.hour, minute=end_datetime.minute)
 
-        if start_time > midnight and start_time < eight_am or\
-                end_time > midnight and end_time < eight_am:
+        if start_time > MIDNIGHT and start_time < EIGHT_AM or\
+                end_time > MIDNIGHT and end_time < EIGHT_AM:
             # starts or ends during closed hours, not a valid showtime
             return ShowTime(start_datetime, end_datetime, False)
         else:

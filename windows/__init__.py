@@ -4,5 +4,6 @@ from windows.genre_window import GenreWindow
 from windows.main_window import MainWindow
 from windows.report_window import ReportWindow
 
+# These two need to come after the rest to avoid circular imports
 from windows.login_window import LoginWindow
 from windows.cinema_application import CinemaApplication
