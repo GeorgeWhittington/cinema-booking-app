@@ -5,7 +5,7 @@ from typing import Optional
 from PIL import ImageTk, Image
 
 from database_models import session, Authority
-from windows import FilmShowingWindow, FilmWindow, GenreWindow, ReportWindow
+from windows import FilmShowingWindow, FilmWindow, GenreWindow, ReportWindow, LoginWindow
 
 
 class CinemaApplication(Tk):
@@ -63,9 +63,11 @@ class CinemaApplication(Tk):
         self.menubar.add_cascade(menu=self.menu_file, label="File")
         self.menubar.add_cascade(menu=self.menu_edit, label="Edit")
         # TODO: add "About" option which credits any assets used (Images and fontawesome icons) and the coders (Us two!)
+        # MacOS seems to handle about menu items similarly to preferences
 
         self.menu_file.add_command(label="New Booking", command=partial(print, "New Booking"))
         self.menu_edit.add_command(label="Cancel Booking", command=partial(print, "Cancel Booking"))
+        self.menu_edit.add_command(label="Logout", command=self.logout)
 
         # If not on macos, add a settings option to the edit menu
         if self.tk.call("tk", "windowingsystem") != "aqua":
@@ -127,6 +129,11 @@ class CinemaApplication(Tk):
             return dialog_frame.result
         except AttributeError:
             return
+
+    def logout(self):
+        self.current_user = None
+        self.menubar.destroy()
+        self.switch_window(LoginWindow, resizeable=False)
 
     @staticmethod
     def show_preferences_dialog():

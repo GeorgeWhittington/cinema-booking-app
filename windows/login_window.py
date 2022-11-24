@@ -32,10 +32,14 @@ class LoginWindow(ttk.Frame):
     def click_login(self):
         user = session.query(User).filter_by(username=self.username_entry.get()).first()
 
+        if not user:
+            messagebox.showerror(title="Please try again", message="Invalid username/password, please try again")
+            return
+
         if user.verify_password(self.password_entry.get()):
             self.master.current_user = user
             self.master.add_menu()
             self.master.switch_window(MainWindow)
             return
 
-        messagebox.showerror(title="Please try again", message="Invalid password, please try again")
+        messagebox.showerror(title="Please try again", message="Invalid username/password, please try again")
