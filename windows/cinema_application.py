@@ -65,7 +65,7 @@ class CinemaApplication(Tk):
         # TODO: add "About" option which credits any assets used (Images and fontawesome icons) and the coders (Us two!)
         # MacOS seems to handle about menu items similarly to preferences
 
-        self.menu_file.add_command(label="New Booking", command=partial(print, "New Booking"))
+        self.menu_file.add_command(label="New Booking", command=partial(self.switch_window, NewBooking))
         self.menu_edit.add_command(label="Cancel Booking", command=partial(print, "Cancel Booking"))
         self.menu_edit.add_command(label="Logout", command=self.logout)
 
