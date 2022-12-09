@@ -25,6 +25,7 @@ class filmImg(ttk.Frame):
 
         self.film_Image = ImageTk.PhotoImage(Image.open(filepath).resize((300, 300)))
         self.img_label = ttk.Label(self.inspect_frame, image=self.film_Image)
+        
 
         # --- Gridding ---
         self.inspect_frame.grid(columnspan=4, rowspan=5)
@@ -48,8 +49,16 @@ class NewBooking(ttk.Frame):
     def __init__(self, parent, *args, **kwargs):
         kwargs["padding"] = (3, 3, 3, 3)
         super().__init__(parent, *args, **kwargs)
+
+        # --- SCROLLBAR VERTICAL ---
+        self.film_Image_scrollbar = ttk.Scrollbar(self, orient="vertical")
+        self.film_Image_scrollbar.grid(row=0, column=5)
     
         filmImg("./assets/american_history_x.jpeg", self, *args, **kwargs).grid(column=3, row=0, rowspan=3, sticky="w")
+        filmImg("./assets/dkr.jpg", self, *args, **kwargs).grid(column=3, row=4, rowspan=3, sticky="w")
+        filmImg("./assets/lifeofb.jpg", self, *args, **kwargs).grid(column=3, row=8, rowspan=3, sticky="w")
+        filmImg("./assets/spirited_away.jpg", self, *args, **kwargs).grid(column=3, row=12, rowspan=3, sticky="w")
+        filmImg("./assets/up.jpg", self, *args, **kwargs).grid(column=3, row=16, rowspan=3, sticky="w")
 
 
 # --- Booking Button ---
