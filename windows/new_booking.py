@@ -23,7 +23,7 @@ class filmImg(ttk.Frame):
         self.inspect_cast = ttk.Label(self.inspect_frame,text ="Cast:")
         self.inspect_genres = ttk.Label(self.inspect_frame,text ="Genres:")
 
-        self.film_Image = ImageTk.PhotoImage(Image.open(filepath).resize((300, 300)))
+        self.film_Image = ImageTk.PhotoImage(Image.open(filepath).resize((200, 200)))
         self.img_label = ttk.Label(self.inspect_frame, image=self.film_Image)
         
 
