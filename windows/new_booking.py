@@ -27,7 +27,7 @@ class filmImg(ttk.Frame):
         self.img_label = ttk.Label(self.inspect_frame, image=self.film_Image)
 
         # --- Gridding ---
-        self.inspect_frame.grid(columnspan=4, rowspan=5, sticky="nesw")
+        self.inspect_frame.grid(columnspan=4, rowspan=5)
         self.inspect_title.grid(column=0, row=0)
         self.inspect_year.grid(column=0, row=1)
         self.inspect_rating.grid(column=0, row=2)

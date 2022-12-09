@@ -5,7 +5,7 @@ from typing import Optional
 from PIL import ImageTk, Image
 
 from database_models import session, Authority
-from windows import FilmShowingWindow, FilmWindow, GenreWindow, ReportWindow, LoginWindow
+from windows import FilmShowingWindow, FilmWindow, GenreWindow, ReportWindow, LoginWindow, NewBooking
 
 
 class CinemaApplication(Tk):
