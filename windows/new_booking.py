@@ -23,12 +23,13 @@ class filmImg(ttk.Frame):
         self.inspect_cast = ttk.Label(self.inspect_frame,text ="Cast:")
         self.inspect_genres = ttk.Label(self.inspect_frame,text ="Genres:")
 
+        self.poster_frame = ttk.Frame(self, borderwidth=5, relief="ridge", width=200, height=200)
         self.film_Image = ImageTk.PhotoImage(Image.open(filepath).resize((200, 200)))
-        self.img_label = ttk.Label(self.inspect_frame, image=self.film_Image)
+        self.img_label = ttk.Label(self.poster_frame, image=self.film_Image)
         
 
         # --- Gridding ---
-        self.inspect_frame.grid(columnspan=4, rowspan=5)
+        self.inspect_frame.grid(column=0, row=0, rowspan=3, sticky="nsew")
         self.inspect_title.grid(column=0, row=0)
         self.inspect_year.grid(column=0, row=1)
         self.inspect_rating.grid(column=0, row=2)
@@ -37,8 +38,14 @@ class filmImg(ttk.Frame):
         self.inspect_duration.grid(column=1, row=0)
         self.inspect_cast.grid(column=1, row=2)
         self.inspect_genres.grid(column=1, row=2)
-        self.img_label.grid(column=4, row=0, columnspan=1, rowspan=3, sticky="w")
 
+        self.poster_frame.grid(column=1, row=0, rowspan=2, sticky="nsew")
+        self.img_label.grid(column=2, row=0)
+
+        parent.rowconfigure(0, weight=1)
+        parent.columnconfigure(0, weight=1)
+        parent.columnconfigure(1, weight=1)
+        
         # --- BOOK BUTTON ---
         self.book_button = ttk.Button(self.inspect_frame, text="book now",)
         self.book_button.grid(column=3, row=5, rowspan=1)
