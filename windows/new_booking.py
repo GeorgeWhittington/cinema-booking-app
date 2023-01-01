@@ -57,15 +57,15 @@ class NewBooking(ttk.Frame):
         kwargs["padding"] = (3, 3, 3, 3)
         super().__init__(parent, *args, **kwargs)
 
-        # --- SCROLLBAR VERTICAL ---
-        self.film_Image_scrollbar = ttk.Scrollbar(self, orient="vertical")
-        self.film_Image_scrollbar.grid(row=0, column=5)
+        for i in range(24):
+            self.rowconfigure(i, weight=1)
+            self.columnconfigure(3, weight=1)
     
-        filmImg("./assets/american_history_x.jpeg", self, *args, **kwargs).grid(column=3, row=0, rowspan=3, sticky="w")
-        filmImg("./assets/dkr.jpg", self, *args, **kwargs).grid(column=3, row=4, rowspan=3, sticky="w")
-        filmImg("./assets/lifeofb.jpg", self, *args, **kwargs).grid(column=3, row=8, rowspan=3, sticky="w")
-        filmImg("./assets/spirited_away.jpg", self, *args, **kwargs).grid(column=3, row=12, rowspan=3, sticky="w")
-        filmImg("./assets/up.jpg", self, *args, **kwargs).grid(column=3, row=16, rowspan=3, sticky="w")
+        filmImg("./assets/american_history_x.jpeg", self, *args, **kwargs).grid(column=3, row=0, rowspan=3, sticky="nsew")
+        filmImg("./assets/dkr.jpg", self, *args, **kwargs).grid(column=3, row=4, rowspan=3, sticky="nsew")
+        filmImg("./assets/lifeofb.jpg", self, *args, **kwargs).grid(column=3, row=8, rowspan=3, sticky="nsew")
+        filmImg("./assets/spirited_away.jpg", self, *args, **kwargs).grid(column=3, row=12, rowspan=3, sticky="nsew")
+        filmImg("./assets/up.jpg", self, *args, **kwargs).grid(column=3, row=16, rowspan=3, sticky="nsew")
 
 
 # --- Booking Button ---
