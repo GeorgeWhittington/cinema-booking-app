@@ -42,9 +42,9 @@ class filmImg(ttk.Frame):
         self.poster_frame.grid(column=1, row=0, rowspan=2, sticky="nsew")
         self.img_label.grid(column=2, row=0)
 
-        parent.rowconfigure(0, weight=1)
-        parent.columnconfigure(0, weight=1)
-        parent.columnconfigure(1, weight=1)
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
         
         # --- BOOK BUTTON ---
         self.book_button = ttk.Button(self.inspect_frame, text="book now",)
