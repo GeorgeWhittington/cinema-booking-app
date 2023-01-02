@@ -7,7 +7,7 @@ class filmImg(ttk.Frame):
 
     # --- Film Image ---
         # In a seperate frame you will have the movie poster with a book now button underneath
-    def __init__(self, filepath, parent, *args, **kwargs,):
+    def __init__(self, filepath, parent, *args, **kwargs):
         kwargs["padding"] = (3, 3, 3, 3)
         super().__init__(parent, *args, **kwargs)
         
