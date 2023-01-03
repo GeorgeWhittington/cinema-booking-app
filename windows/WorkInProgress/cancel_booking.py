@@ -25,6 +25,7 @@ class cancelBooking(ttk.Frame):
         # Pull data from db and show booking that matches booking reference
         self.booking_data = ttk.Label(self.booking_data, text="booking details here")
 
+        # --- Gridding ---
         self.inspect_frame.grid(column=0, row=0, rowspan=3, sticky="nsew")
         self.booking_reference.grid(column=0, row=0)
         self.booking_surname.grid(column=0, row=1)
