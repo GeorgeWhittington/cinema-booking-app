@@ -22,7 +22,8 @@ class filmImg(ttk.Frame):
         self.inspect_duration = ttk.Label(self.inspect_frame,text ="Duration:")
         self.inspect_cast = ttk.Label(self.inspect_frame,text ="Cast:")
         self.inspect_genres = ttk.Label(self.inspect_frame,text ="Genres:")
-
+        
+        #Poster for Film next to information on that film
         self.poster_frame = ttk.Frame(self, borderwidth=5, relief="ridge", width=200, height=200)
         self.film_Image = ImageTk.PhotoImage(Image.open(filepath).resize((200, 200)))
         self.img_label = ttk.Label(self.poster_frame, image=self.film_Image)
