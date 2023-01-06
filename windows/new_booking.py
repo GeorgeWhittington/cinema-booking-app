@@ -1,8 +1,28 @@
 from tkinter import ttk
 import tkinter as tk
 from PIL import ImageTk, Image
+
+from sqlalchemy.sql import and_
+from datetime import datetime, time
+from misc.constants import ADD, EDIT, FILM_FORMAT, MIDNIGHT, EIGHT_AM
+
 from database_models import session, Showing, Cinema, Film, Screen, Genre, AgeRatings
 from windows import FilmShowingWindow, FilmWindow
+
+today = datetime.now()
+day_beginning = datetime.combine(today, time(hour=0, minute=0))
+day_end = datetime.combine(today, time(hour=23, minute=59))
+
+today_films = session.query(Film).join(Film.showings).join(Showing.screen).filter(
+    Screen.cinema_id == parent.current_user.cinema_id,
+    Showing.show_time >= day_beginning,
+    Showing.show_time <= day_end
+)
+
+film_tiles = []
+
+for i in enumerate(todays_films):
+    film_tiles.append(filmImg(self, film=film).grid(column=3, row=1, rowspan=3, sticky="nsew"))
 
 class enterDetails(ttk.Frame):
     def __init__(self, filepath, parent, *args, **kwargs):
@@ -42,12 +62,28 @@ class enterDetails(ttk.Frame):
         confirm_button = ttk.Button(self.details_frame, text="Confirm", command=confirm)
         confirm_button.grid(row=3, column=1, sticky="E")
 
+class Film(Base):
+    __tablename__ = "film"
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String, nullable=False)
+    year_published = Column(Integer, nullable=False)
+    rating = Column(Float, nullable=False)
+    age_rating = Column(Enum(AgeRatings), nullable=False)
+    duration = Column(Interval, nullable=False)
+    synopsis = Column(Text, nullable=False)
+    cast = Column(String, nullable=False)
+    poster = Column(String, nullable=True)
+
+    genres = relationship("Genre", secondary=film_genre, back_populates="film")
+    showings = relationship("Showing", back_populates="film")
 
 class filmImg(ttk.Frame):
     
     # --- Film Image ---
         # In a seperate frame you will have the movie poster with a book now button underneath
     def __init__(self, filepath, parent, *args, **kwargs):
+        self.film = kwargs.pop("film")
         kwargs["padding"] = (3, 3, 3, 3)
         super().__init__(parent, *args, **kwargs)
         
