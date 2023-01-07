@@ -80,8 +80,9 @@ class filmImg(ttk.Frame):
         self.evening_film = ttk.Radiobutton(self.inspect_frame, text="Evening", value="option 3", variable="evening")
         
         #Poster for Film next to information on that film
+        film_img = self.film.poster if self.film.poster else "assets/placeholder.png"
         self.poster_frame = ttk.Frame(self, borderwidth=5, relief="ridge", width=200, height=200)
-        self.film_Image = ImageTk.PhotoImage(Image.open(self.film.poster).resize((200, 200)))
+        self.film_Image = ImageTk.PhotoImage(Image.open(film_img).resize((200, 200)))
         self.img_label = ttk.Label(self.poster_frame, image=self.film_Image)
 
         # --- Gridding ---
