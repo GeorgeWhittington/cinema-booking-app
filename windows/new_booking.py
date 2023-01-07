@@ -74,10 +74,13 @@ class filmImg(ttk.Frame):
         #BACKUP LABEL IF NO FILMS THAT DAY
 
         # --- Select Show Time
-        selected_value = tk.StringVar()
-        self.morning_film = ttk.Radiobutton(self.inspect_frame, text="Morning", value="option 1", variable="morning")
-        self.afternoon_film = ttk.Radiobutton(self.inspect_frame, text="Afternoon", value="option 2", variable="afternoon")
-        self.evening_film = ttk.Radiobutton(self.inspect_frame, text="Evening", value="option 3", variable="evening")
+        morning_film = tk.StringVar()
+        afternoon_film = tk.StringVar()
+        evening_film = tk.StringVar()
+        
+        self.morning_film = ttk.Radiobutton(self.inspect_frame, text="Morning", value="option 1", variable= morning_film)
+        self.afternoon_film = ttk.Radiobutton(self.inspect_frame, text="Afternoon", value="option 2", variable= afternoon_film)
+        self.evening_film = ttk.Radiobutton(self.inspect_frame, text="Evening", value="option 3", variable= evening_film)
         
         #Poster for Film next to information on that film
         film_img = self.film.poster if self.film.poster else "assets/placeholder.png"
