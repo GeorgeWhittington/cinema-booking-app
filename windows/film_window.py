@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
+import shutil
+import os
 
-from tkinter import ttk, messagebox, Text, Listbox, StringVar
+from tkinter import ttk, messagebox, Text, Listbox, StringVar, filedialog
+from PIL import ImageTk, Image
 
 from database_models import session, Film, Genre, AgeRatings
 from misc.constants import OLDEST_FILM_YEAR, LONGEST_FILM_HOURS, ADD, EDIT
@@ -52,6 +55,7 @@ class FilmWindow(ttk.Frame):
         self.inspect_synopsis = ttk.Label(self.inspect_frame, text="Synopsis:", wraplength=240)
         self.inspect_cast = ttk.Label(self.inspect_frame, text="Cast:", wraplength=240)
         self.inspect_genres = ttk.Label(self.inspect_frame, text="Genres:", wraplength=240)
+        self.inspect_poster = ttk.Label(self.inspect_frame, text="Poster:")
 
         # --- Buttons ---
         self.button_frame = ttk.Frame(self)
@@ -80,7 +84,7 @@ class FilmWindow(ttk.Frame):
 
         self.inspect_frame.grid(column=0, row=1, sticky="nsew")
 
-        for y, widget in enumerate([self.inspect_title, self.inspect_year, self.inspect_rating, self.inspect_age_rating, self.inspect_duration, self.inspect_synopsis, self.inspect_cast, self.inspect_genres]):
+        for y, widget in enumerate([self.inspect_title, self.inspect_year, self.inspect_rating, self.inspect_age_rating, self.inspect_duration, self.inspect_synopsis, self.inspect_cast, self.inspect_genres, self.inspect_poster]):
             widget.grid(column=0, row=y, sticky="w")
 
         self.button_frame.grid(column=0, row=2, sticky="nsew")
@@ -153,6 +157,7 @@ class FilmWindow(ttk.Frame):
         self.replace_label(self.inspect_synopsis, selected_film.synopsis)
         self.replace_label(self.inspect_cast, selected_film.cast)
         self.replace_label(self.inspect_genres, selected_film.string_conv("genres"))
+        self.replace_label(self.inspect_poster, selected_film.poster)
 
     def resize(self, event):
         """Listens to configure events on this window.
@@ -217,6 +222,7 @@ class FilmWindow(ttk.Frame):
         self.replace_label(self.inspect_synopsis, "")
         self.replace_label(self.inspect_cast, "")
         self.replace_label(self.inspect_genres, "")
+        self.replace_label(self.inspect_poster, "")
 
     def update_film(self):
         """Callback for update button."""
@@ -233,8 +239,6 @@ class FilmWindow(ttk.Frame):
 
         # Update item in tree with new values
         iid = str(film.id)
-
-        h, m = get_hours_minutes(film.duration.total_seconds())
 
         self.treeview.set(iid, 0, film.title)
         self.treeview.set(iid, 1, film.year_published)
@@ -293,6 +297,7 @@ class FilmEditDialog(ttk.Frame):
         self.synopsis_label = ttk.Label(self, text="Synopsis:")
         self.cast_label = ttk.Label(self, text="Cast:")
         self.genres_label = ttk.Label(self, text="Genres:")
+        self.poster_label = ttk.Label(self, text="Poster:")
 
         self.title_entry = ttk.Entry(self)
 
@@ -320,6 +325,17 @@ class FilmEditDialog(ttk.Frame):
         self.genre_choices = StringVar(value=[genre.name for genre in self.all_genres])
         self.genres_entry = Listbox(self, listvariable=self.genre_choices, height=5, selectmode="extended")
 
+        self.poster_frame = ttk.Frame(self)
+        film_poster = "assets/placeholder.png"
+        if self.edit_type == EDIT:
+            film_poster = self.film.poster if self.film.poster else film_poster
+
+        self.poster_image = ImageTk.PhotoImage(Image.open(film_poster).resize((200, 200)))
+        self.poster_image_label = ttk.Label(self.poster_frame, image=self.poster_image)
+        self.inner_poster_frame = ttk.Frame(self.poster_frame)
+        self.poster_path_label = ttk.Label(self.inner_poster_frame, text=film_poster)
+        self.poster_button = ttk.Button(self.inner_poster_frame, text="Select Poster", command=self.poster_select)
+
         self.button_frame = ttk.Frame(self)
         self.submit_button = ttk.Button(self.button_frame, text=self.edit_type, command=self.submit)
         self.cancel_button = ttk.Button(self.button_frame, text="Cancel", command=self.dismiss)
@@ -333,12 +349,18 @@ class FilmEditDialog(ttk.Frame):
             (self.duration_label, self.duration_frame),
             (self.synopsis_label, self.synopsis_entry),
             (self.cast_label, self.cast_entry),
-            (self.genres_label, self.genres_entry)
+            (self.genres_label, self.genres_entry),
+            (self.poster_label, self.poster_frame)
         ]
 
         for y, (label, entry) in enumerate(widgets):
             label.grid(column=0, row=y, pady=2, sticky="w")
             entry.grid(column=1, row=y, pady=2, sticky="ew")
+
+        self.poster_image_label.grid(column=0, row=0)
+        self.inner_poster_frame.grid(column=0, row=1)
+        self.poster_path_label.grid(column=0, row=0)
+        self.poster_button.grid(column=1, row=0)
 
         self.button_frame.grid(column=1, row=len(widgets))
         self.submit_button.grid(column=0, row=0)
@@ -423,14 +445,16 @@ class FilmEditDialog(ttk.Frame):
         for sel_id in self.genres_entry.curselection():
             genres.append(self.all_genres[sel_id])
 
+        poster = None if self.poster_path_label["text"] == "assets/placeholder.png" else self.poster_path_label["text"]
+
         if self.edit_type == ADD:
-            self.result = self.add_film(age_rating, genres)
+            self.result = self.add_film(age_rating, genres, poster)
         elif self.edit_type == EDIT:
-            self.edit_film(age_rating, genres)
+            self.edit_film(age_rating, genres, poster)
 
         self.dismiss()
 
-    def add_film(self, age_rating, genres):
+    def add_film(self, age_rating, genres, poster):
         new_film = Film(
             title=self.title_entry.get().strip(),
             year_published=int(self.year_entry.get()),
@@ -439,13 +463,14 @@ class FilmEditDialog(ttk.Frame):
             duration=timedelta(hours=int(self.duration_hours.get()), minutes=int(self.duration_minutes.get())),
             synopsis=self.synopsis_entry.get('1.0', 'end').strip(),
             cast=self.cast_entry.get().strip(),
-            genres=genres)
+            genres=genres,
+            poster=poster)
         session.add(new_film)
         session.commit()
 
         return new_film
 
-    def edit_film(self, age_rating, genres):
+    def edit_film(self, age_rating, genres, poster):
         self.film.title = self.title_entry.get().strip()
         self.film.year_published = int(self.year_entry.get())
         self.film.rating = int(self.rating_entry.get()) / 100.0
@@ -454,5 +479,22 @@ class FilmEditDialog(ttk.Frame):
         self.film.synopsis = self.synopsis_entry.get('1.0', 'end').strip()
         self.film.cast = self.cast_entry.get().strip()
         self.film.genres = genres
+        self.film.poster = poster
 
         session.commit()
+
+    def poster_select(self):
+        filename = filedialog.askopenfilename(filetypes=[
+            ("PNG Image Files", ".png"),
+            ("JPEG Image Files", "jpg jpeg")])
+        if not any(filename.endswith(ext) for ext in [".png", ".jpg", ".jpeg"]):
+            messagebox.showerror(title="Invalid poster image", message="Poster images must be either png's or jpeg's")
+            return
+
+        copied_file = shutil.copy(filename, "assets")
+
+        _, _file_name = os.path.split(copied_file)
+
+        self.poster_image = ImageTk.PhotoImage(Image.open(copied_file).resize((200, 200)))
+        self.poster_image_label.configure(image=self.poster_image)
+        self.poster_path_label.config(text=f"assets/{_file_name}")
