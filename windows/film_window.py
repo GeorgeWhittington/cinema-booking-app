@@ -145,8 +145,6 @@ class FilmWindow(ttk.Frame):
 
         self.inspected_film_id = selected_film.id
 
-        h, m = get_hours_minutes(selected_film.duration.total_seconds())
-
         self.replace_label(self.inspect_title, selected_film.title)
         self.replace_label(self.inspect_year, selected_film.year_published)
         self.replace_label(self.inspect_rating, selected_film.string_conv("rating"))

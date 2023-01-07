@@ -7,6 +7,7 @@ from sqlalchemy import Column, Float, Integer, Interval, String, Text
 from sqlalchemy.sql import and_
 from datetime import datetime, time
 from misc.constants import ADD, EDIT, FILM_FORMAT, MIDNIGHT, EIGHT_AM
+from paginate import Page
 
 from database_models import session, Showing, Cinema, Film, Screen, Genre, AgeRatings
 from windows import FilmShowingWindow, FilmWindow
@@ -121,26 +122,62 @@ class filmImg(ttk.Frame):
 
 
 class NewBooking(ttk.Frame):
-    
     def __init__(self, parent, *args, **kwargs):
         kwargs["padding"] = (3, 3, 3, 3)
         super().__init__(parent, *args, **kwargs)
 
-        for i in range(24):
-            self.rowconfigure(i, weight=1)
-            self.columnconfigure(3, weight=1)
+        self.button_frame = ttk.Frame(self)
+        self.prev_button = ttk.Button(self.button_frame, text="Previous Page", command=self.prev_page)
+        self.next_button = ttk.Button(self.button_frame, text="Next Page", command=self.next_page)
+
+        self.prev_button.grid(column=0, row=0)
+        self.next_button.grid(column=1, row=0)
 
         today = datetime.now()
         day_beginning = datetime.combine(today, time(hour=0, minute=0))
         day_end = datetime.combine(today, time(hour=23, minute=59))
 
-        today_films = session.query(Film).join(Film.showings).join(Showing.screen).filter(
+        self.todays_films = session.query(Film).join(Film.showings).join(Showing.screen).filter(
             Screen.cinema_id == parent.current_user.cinema_id,
             Showing.show_time >= day_beginning,
             Showing.show_time <= day_end
-            )
+        ).all()
 
-        film_tiles = []
+        self.page = self.get_page()
 
-        for i, film in enumerate(today_films):
-            film_tiles.append(filmImg(self, film=film).grid(column=3, row=i, rowspan=3, sticky="nsew"))
+        self.film_tiles = []
+        self.display_films()
+
+    def display_films(self):
+        for tile in self.film_tiles:
+            tile.grid_remove()
+            tile.destroy()
+
+        self.film_tiles = []
+
+        print(self.page.items)
+
+        for i, film in enumerate(self.page):
+            film_img = filmImg(self, film=film)
+            film_img.grid(column=0, row=i, sticky="nsew")
+            self.film_tiles.append(film_img)
+
+        self.button_frame.grid(column=0, row=len(self.page.items))
+
+    def prev_page(self):
+        if self.page.page == 1:
+            return
+
+        self.page = self.get_page(page=self.page.page - 1)
+        self.display_films()
+
+    def next_page(self):
+        page = self.get_page(page=self.page.page + 1)
+        if not page.items:
+            return
+
+        self.page = page
+        self.display_films()
+
+    def get_page(self, page=1):
+        return Page(self.todays_films, page=page, items_per_page=4)
