@@ -62,14 +62,14 @@ class filmImg(ttk.Frame):
         # --- Film Information ---
         # In this frame it will contain each film listing such as; Title and Year, Genre and cast & bio of movie.
         self.inspect_frame = ttk.Frame(self, borderwidth=5, relief="ridge", width=1000, height=1000)
-        self.inspect_title = ttk.Label(self.inspect_frame,text ="Title:")
-        self.inspect_year = ttk.Label(self.inspect_frame,text ="Year:")
-        self.inspect_rating = ttk.Label(self.inspect_frame,text ="Rating:")
-        self.inspect_age_rating = ttk.Label(self.inspect_frame,text ="Age Rating:")
-        self.inspect_synopsis = ttk.Label(self.inspect_frame, text ="Synopsis:")
-        self.inspect_duration = ttk.Label(self.inspect_frame,text ="Duration:")
-        self.inspect_cast = ttk.Label(self.inspect_frame,text ="Cast:")
-        self.inspect_genres = ttk.Label(self.inspect_frame,text ="Genres:")
+        self.inspect_title = ttk.Label(self.inspect_frame,text = self.film.title)
+        self.inspect_year = ttk.Label(self.inspect_frame,text = self.film.year_published)
+        self.inspect_rating = ttk.Label(self.inspect_frame,text = self.film.string_conv("rating"))
+        self.inspect_age_rating = ttk.Label(self.inspect_frame,text = self.film.age_rating.value)
+        self.inspect_synopsis = ttk.Label(self.inspect_frame, text = self.film.synopsis)
+        self.inspect_duration = ttk.Label(self.inspect_frame,text = self.film.string_conv("duration"))
+        self.inspect_cast = ttk.Label(self.inspect_frame,text = self.film.cast)
+        self.inspect_genres = ttk.Label(self.inspect_frame,text = self.film.string_conv("genres"))
         
         #BACKUP LABEL IF NO FILMS THAT DAY
 
