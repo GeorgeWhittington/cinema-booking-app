@@ -62,15 +62,24 @@ class filmImg(ttk.Frame):
         
         # --- Film Information ---
         # In this frame it will contain each film listing such as; Title and Year, Genre and cast & bio of movie.
-        self.inspect_frame = ttk.Frame(self, borderwidth=5, relief="ridge", width=1000, height=1000)
-        self.inspect_title = ttk.Label(self.inspect_frame,text = self.film.title)
-        self.inspect_year = ttk.Label(self.inspect_frame,text = self.film.year_published)
-        self.inspect_rating = ttk.Label(self.inspect_frame,text = self.film.string_conv("rating"))
-        self.inspect_age_rating = ttk.Label(self.inspect_frame,text = self.film.age_rating.value)
-        self.inspect_synopsis = ttk.Label(self.inspect_frame, text = self.film.synopsis)
-        self.inspect_duration = ttk.Label(self.inspect_frame,text = self.film.string_conv("duration"))
-        self.inspect_cast = ttk.Label(self.inspect_frame,text = self.film.cast)
-        self.inspect_genres = ttk.Label(self.inspect_frame,text = self.film.string_conv("genres"))
+        self.wrapper_frame = ttk.Frame(self, borderwidth=5,relief="ridge")
+        self.title_frame = ttk.Frame(self.wrapper_frame, borderwidth=5)
+        self.inspect_frame = ttk.Frame(self.wrapper_frame, borderwidth=5)
+        self.rating_frame = ttk.Frame(self.wrapper_frame, borderwidth=5)
+        self.booking_frame = ttk.Frame(self.wrapper_frame)
+
+        self.title = ttk.Label(self.title_frame,text = self.film.title)
+        self.year = ttk.Label(self.title_frame,text = self.film.year_published)
+        self.duration = ttk.Label(self.title_frame,text = self.film.string_conv("duration"))
+        
+        self.synopsis = ttk.Label(self.inspect_frame, text = self.film.synopsis, wraplength=800)
+        self.cast = ttk.Label(self.inspect_frame,text = self.film.cast)
+
+        self.rating = ttk.Label(self.rating_frame,text = self.film.string_conv("rating"))
+        self.age_rating = ttk.Label(self.rating_frame,text = self.film.age_rating.value)
+        self.genres = ttk.Label(self.rating_frame,text = self.film.string_conv("genres"))
+        # --- BOOK BUTTON ---
+        self.book_button = ttk.Button(self.booking_frame, text="Book Now", command=self.book)
         
         #BACKUP LABEL IF NO FILMS THAT DAY
 
@@ -79,9 +88,9 @@ class filmImg(ttk.Frame):
         afternoon_film = tk.StringVar()
         evening_film = tk.StringVar()
         
-        self.morning_film = ttk.Radiobutton(self.inspect_frame, text="Morning", value="option 1", variable= morning_film)
-        self.afternoon_film = ttk.Radiobutton(self.inspect_frame, text="Afternoon", value="option 2", variable= afternoon_film)
-        self.evening_film = ttk.Radiobutton(self.inspect_frame, text="Evening", value="option 3", variable= evening_film)
+        self.morning_film = ttk.Radiobutton(self.booking_frame, text="Morning", value="option 1", variable= morning_film)
+        self.afternoon_film = ttk.Radiobutton(self.booking_frame, text="Afternoon", value="option 2", variable= afternoon_film)
+        self.evening_film = ttk.Radiobutton(self.booking_frame, text="Evening", value="option 3", variable= evening_film)
         
         #Poster for Film next to information on that film
         film_img = self.film.poster if self.film.poster else "assets/placeholder.png"
@@ -90,30 +99,38 @@ class filmImg(ttk.Frame):
         self.img_label = ttk.Label(self.poster_frame, image=self.film_Image)
 
         # --- Gridding ---
-        self.inspect_frame.grid(column=0, row=0, rowspan=3, sticky="nsew")
-        self.inspect_title.grid(column=0, row=0)
-        self.inspect_year.grid(column=0, row=1)
-        self.inspect_rating.grid(column=0, row=2)
-        self.inspect_age_rating.grid(column=1, row=1)
-        self.inspect_synopsis.grid(column=0, row=3)
-        self.inspect_duration.grid(column=1, row=0)
-        self.inspect_cast.grid(column=1, row=2)
-        self.inspect_genres.grid(column=1, row=2)
+        self.wrapper_frame.grid(column=0, row=0, sticky="nsew")
+        self.title_frame.grid(column=0, row=0, sticky="nsew")
+        self.inspect_frame.grid(column=0, row=1, sticky="nsew")
+        self.rating_frame.grid(column=0, row=2, sticky="nsew")
+        self.booking_frame.grid(column=0, row=3, sticky="nsew")
+        self.poster_frame.grid(column=1, row=0, sticky="nsew")
 
-        self.morning_film.grid(column=0, row=3)
-        self.afternoon_film.grid(column=1, row=3)
-        self.evening_film.grid(column=2, row=3)
+        self.title.grid(column=0, row=0)
+        self.year.grid(column=1, row=0)
+        self.duration.grid(column=2, row=0)
+        
+        self.synopsis.grid(column=0, row=0, sticky="w")
+        self.cast.grid(column=0, row=1, sticky="w")
 
-        self.poster_frame.grid(column=1, row=0, rowspan=2, sticky="nsew")
-        self.img_label.grid(column=2, row=0)
+        self.age_rating.grid(column=0, row=0)
+        self.genres.grid(column=1, row=0)
+        self.rating.grid(column=2, row=0)
 
-        self.rowconfigure(0, weight=1)
+        self.morning_film.grid(column=0, row=0, sticky="w")
+        self.afternoon_film.grid(column=1, row=0, sticky="w")
+        self.evening_film.grid(column=2, row=0, sticky="w")
+        self.book_button.grid(column=3, row=0, sticky="e")
+
+        self.img_label.grid(column=0, row=0)
+
+        self.rowconfigure(0, weight=0)
+        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=0)
+        self.rowconfigure(3, weight=0)
+
         self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=1)
-
-        # --- BOOK BUTTON ---
-        self.book_button = ttk.Button(self.inspect_frame, text="Book Now", command=self.book)
-        self.book_button.grid(column=3, row=5, rowspan=1)
+        self.columnconfigure(1, weight=0)
 
     def book(self):
         details_window = tk.Toplevel()
