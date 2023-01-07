@@ -11,20 +11,6 @@ from misc.constants import ADD, EDIT, FILM_FORMAT, MIDNIGHT, EIGHT_AM
 from database_models import session, Showing, Cinema, Film, Screen, Genre, AgeRatings
 from windows import FilmShowingWindow, FilmWindow
 
-today = datetime.now()
-day_beginning = datetime.combine(today, time(hour=0, minute=0))
-day_end = datetime.combine(today, time(hour=23, minute=59))
-
-today_films = session.query(Film).join(Film.showings).join(Showing.screen).filter(
-    Screen.cinema_id == parent.current_user.cinema_id,
-    Showing.show_time >= day_beginning,
-    Showing.show_time <= day_end
-)
-
-film_tiles = []
-
-for i in enumerate(todays_films):
-    film_tiles.append(filmImg(self, film=film).grid(column=3, row=1, rowspan=3, sticky="nsew"))
 
 class enterDetails(ttk.Frame):
     def __init__(self, filepath, parent, *args, **kwargs):
@@ -64,27 +50,11 @@ class enterDetails(ttk.Frame):
         confirm_button = ttk.Button(self.details_frame, text="Confirm", command=confirm)
         confirm_button.grid(row=3, column=1, sticky="E")
 
-class Film(Base):
-    __tablename__ = "film"
-
-    id = Column(Integer, primary_key=True)
-    title = Column(String, nullable=False)
-    year_published = Column(Integer, nullable=False)
-    rating = Column(Float, nullable=False)
-    age_rating = Column(Enum(AgeRatings), nullable=False)
-    duration = Column(Interval, nullable=False)
-    synopsis = Column(Text, nullable=False)
-    cast = Column(String, nullable=False)
-    poster = Column(String, nullable=True)
-
-    genres = relationship("Genre", secondary=film_genre, back_populates="film")
-    showings = relationship("Showing", back_populates="film")
-
 class filmImg(ttk.Frame):
     
     # --- Film Image ---
         # In a seperate frame you will have the movie poster with a book now button underneath
-    def __init__(self, filepath, parent, *args, **kwargs):
+    def __init__(self, parent, *args, **kwargs):
         self.film = kwargs.pop("film")
         kwargs["padding"] = (3, 3, 3, 3)
         super().__init__(parent, *args, **kwargs)
@@ -100,16 +70,18 @@ class filmImg(ttk.Frame):
         self.inspect_duration = ttk.Label(self.inspect_frame,text ="Duration:")
         self.inspect_cast = ttk.Label(self.inspect_frame,text ="Cast:")
         self.inspect_genres = ttk.Label(self.inspect_frame,text ="Genres:")
+        
+        #BACKUP LABEL IF NO FILMS THAT DAY
 
         # --- Select Show Time
         selected_value = tk.StringVar()
-        self.morning_film = ttk.Radiobutton(self.inspect_frame, text="Morning", value="option 1", variable="selected_value")
-        self.afternoon_film = ttk.Radiobutton(self.inspect_frame, text="Afternoon", value="option 2", variable="selected_value")
-        self.evening_film = ttk.Radiobutton(self.inspect_frame, text="Evening", value="option 3", variable="selected_value")
+        self.morning_film = ttk.Radiobutton(self.inspect_frame, text="Morning", value="option 1", variable="morning")
+        self.afternoon_film = ttk.Radiobutton(self.inspect_frame, text="Afternoon", value="option 2", variable="afternoon")
+        self.evening_film = ttk.Radiobutton(self.inspect_frame, text="Evening", value="option 3", variable="evening")
         
         #Poster for Film next to information on that film
         self.poster_frame = ttk.Frame(self, borderwidth=5, relief="ridge", width=200, height=200)
-        self.film_Image = ImageTk.PhotoImage(Image.open(filepath).resize((200, 200)))
+        self.film_Image = ImageTk.PhotoImage(Image.open(self.film.poster).resize((200, 200)))
         self.img_label = ttk.Label(self.poster_frame, image=self.film_Image)
 
         # --- Gridding ---
@@ -153,28 +125,18 @@ class NewBooking(ttk.Frame):
         for i in range(24):
             self.rowconfigure(i, weight=1)
             self.columnconfigure(3, weight=1)
-    
-        filmImg("./assets/american_history_x.jpeg", self, *args, **kwargs).grid(column=3, row=0, rowspan=3, sticky="nsew")
-        filmImg("./assets/dkr.jpg", self, *args, **kwargs).grid(column=3, row=4, rowspan=3, sticky="nsew")
-        filmImg("./assets/lifeofb.jpg", self, *args, **kwargs).grid(column=3, row=8, rowspan=3, sticky="nsew")
-        filmImg("./assets/spirited_away.jpg", self, *args, **kwargs).grid(column=3, row=12, rowspan=3, sticky="nsew")
-        filmImg("./assets/up.jpg", self, *args, **kwargs).grid(column=3, row=16, rowspan=3, sticky="nsew")
 
+        today = datetime.now()
+        day_beginning = datetime.combine(today, time(hour=0, minute=0))
+        day_end = datetime.combine(today, time(hour=23, minute=59))
 
-# --- Booking Button ---
-        # Underneath each film will be a "Book Now" button for easy booking
-            # --- INSERT LINK TO SHOW VIEWINGS PAGE ---
-    #def book_button(self):
-            #takes to film_showing.py
-        # Callback for view showings button.
-        #try:
-            #selected_id = int(self.treeview.selection()[0])
-        #except IndexError:
-            #self.master.switch_window(FilmShowingWindow)
-            #return
+        today_films = session.query(Film).join(Film.showings).join(Showing.screen).filter(
+            Screen.cinema_id == parent.current_user.cinema_id,
+            Showing.show_time >= day_beginning,
+            Showing.show_time <= day_end
+            )
 
-        #film = session.query(Film).get(selected_id)
-        #if not film:
-            #return
+        film_tiles = []
 
-        #self.master.switch_window(FilmShowingWindow, kwargs={"film_filter": film.id})
+        for i, film in enumerate(today_films):
+            film_tiles.append(filmImg(self, film=film).grid(column=3, row=i, rowspan=3, sticky="nsew"))

@@ -27,6 +27,7 @@ class Film(Base):
     duration = Column(Interval, nullable=False)  # Translates to datetime.timedelta object
     synopsis = Column(Text, nullable=False)
     cast = Column(String, nullable=False)
+    poster = Column(String, nullable=True)
 
     genres = relationship("Genre", secondary=film_genre, back_populates="films")
     showings = relationship("Showing", back_populates="film")
