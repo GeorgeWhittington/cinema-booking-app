@@ -14,42 +14,96 @@ from windows import FilmShowingWindow, FilmWindow
 
 
 class enterDetails(ttk.Frame):
-    def __init__(self, filepath, parent, *args, **kwargs):
+    def __init__(self, parent, *args, **kwargs):
+        self.dismiss = kwargs.pop("dismiss")
+        self.film = kwargs.pop("film")
+        self.time_period = kwargs.pop("time_period")
+
         kwargs["padding"] = (3, 3, 3, 3)
         super().__init__(parent, *args, **kwargs)
+
+        now = datetime.now()
+
+        if self.time_period == "morning":
+            time_beginning = datetime.combine(now, time(hour=8, minute=0))
+            time_end = datetime.combine(now, time(hour=11, minute=59))
+        elif self.time_period == "afternoon":
+            time_beginning = datetime.combine(now, time(hour=12, minute=0))
+            time_end = datetime.combine(now, time(hour=16, minute=59))
+        elif self.time_period == "evening":
+            time_beginning = datetime.combine(now, time(hour=17, minute=0))
+            time_end = datetime.combine(now, time(hour=23, minute=59))
+
+        self.showings = session.query(Showing).filter(
+            Showing.film_id == self.film.id,
+            Showing.show_time >= time_beginning,
+            Showing.show_time <= time_end
+        ).all()
+
+        self.showings_formatted = []
+        for showing in self.showings:
+            self.showings_formatted.append(f"{showing.film.title}, {showing.show_time}")
 
         #To enter details for booking
         self.details_frame = ttk.Frame(self, borderwidth=5, relief="ridge", width=1000, height=1000)
         self.details_title = ttk.LabelFrame(self.details_frame, text="Booking Details")
-        self.first_name_label = ttk.Label(self.details_frame, text="First Name:")
-        self.first_name_field = ttk.Entry(self.details_frame)
+        self.showing_label = ttk.Label(self.details_frame, text="Film Showing:")
+        self.showing_entry = ttk.Combobox(self.details_frame)
+        self.showing_entry["values"] = self.showings_formatted
 
-        self.surname_label = ttk.Label(self.details_frame, text="Last Name:")
-        self.surname_field = ttk.Entry(self.details_frame)
+        self.full_name_label = ttk.Label(self.details_frame, text="Full Name:")
+        self.full_name_field = ttk.Entry(self.details_frame)
+        self.phone_no_label = ttk.Label(self.details_frame, text="Phone Number:")
+        self.phone_no_field = ttk.Entry(self.details_frame)
+        self.Email_label = ttk.Label(self.details_frame, text="E-Mail:")
+        self.Email_field = ttk.Entry(self.details_frame)
 
-        self.name_label = ttk.Label(self.details_frame, text="Full Name:")
-        self.name_field = ttk.Entry(self.details_frame)
+        self.seating_label = ttk.Label(self.details_frame, text="Seating Area:")
 
-        self.seating_option = ttk.Label(self.details_frame, text="Seating Area")
-        self.seating_field = tk.StringVar(self.details_frame)
-        self.seating_option.set = ("Select Seating")
-        self.option_menu = ttk.OptionMenu(self.details_frame, self.seating_field, "Lower Hall", "Upper Gallery", "VIP")
+        self.seating_frame = ttk.Frame(self.details_frame)
+        self.seating_option_lh = ttk.Label(self.seating_frame, text="Lower Hall")
+        self.seating_no_value_lh = ttk.Spinbox(self.seating_frame, from_=0.0, to=10.0)
+        self.seating_option_ug = ttk.Label(self.seating_frame, text="Upper Gallery")
+        self.seating_no_value_ug = ttk.Spinbox(self.seating_frame, from_=0.0, to=10.0)
+        self.seating_option_vip = ttk.Label(self.seating_frame, text="VIP")
+        self.seating_no_value_vip = ttk.Spinbox(self.seating_frame, from_=0.0, to=10.0)
+
+        #Total cost real time 
         
-        # Lay out the entry fields in a grid
-        self.first_name_label.grid(row=0, column=0, sticky="W")
-        self.first_name_field.grid(row=0, column=1)
-        self.surname_label.grid(row=1, column=0, sticky="W")
-        self.surname_field.grid(row=1, column=1)
-        self.seating_option.grid(row=2, column=0, sticky="W")
-        self.option_menu.grid(row=2, column=1)
+        widgets = [
+            (self.showing_label , self.showing_entry),
+            (self.full_name_label , self.full_name_field),
+            (self.phone_no_label , self.phone_no_field),
+            (self.Email_label , self.Email_field),
+            (self.seating_label , self.seating_frame)
+        ]
+
+        for y, (label, field) in enumerate(widgets):
+            label.grid(column=0, row=y, sticky="w")
+            field.grid(column=1, row=y, sticky="ew")
         
-        def confirm():
-            print("First Name:", self.first_name_field.get())
-            print("Surname:", self.surname_field.get())
-            print("Seating Area:", self.seating_field.get())
+        self.details_frame.grid(column=0, row=0)
+
+        self.details_frame.columnconfigure(0, weight=0)
+        self.details_frame.columnconfigure(1, weight=1)
+
+        self.seating_option_lh.grid(column=0, row=0)
+        self.seating_no_value_lh.grid(column=1, row=0)
+        self.seating_option_ug.grid(column=2, row=0)
+        self.seating_no_value_ug.grid(column=3, row=0)
+        self.seating_option_vip.grid(column=4, row=0)
+        self.seating_no_value_vip.grid(column=5, row=0)
         
-        confirm_button = ttk.Button(self.details_frame, text="Confirm", command=confirm)
-        confirm_button.grid(row=3, column=1, sticky="E")
+        self.button_frame = ttk.Frame(self)
+        self.confirm_button = ttk.Button(self.button_frame, text="Confirm", command=self.confirm)
+        self.cancel_button = ttk.Button(self.button_frame, text="Cancel", command=self.dismiss)
+        
+        self.button_frame.grid(column=0, row=1)
+        self.confirm_button.grid(column=0, row=0)
+        self.cancel_button.grid(column=1, row=0)
+    
+    def confirm(self):
+        pass
 
 class filmImg(ttk.Frame):
     
@@ -59,7 +113,7 @@ class filmImg(ttk.Frame):
         self.film = kwargs.pop("film")
         kwargs["padding"] = (3, 3, 3, 3)
         super().__init__(parent, *args, **kwargs)
-        
+
         # --- Film Information ---
         # In this frame it will contain each film listing such as; Title and Year, Genre and cast & bio of movie.
         self.wrapper_frame = ttk.Frame(self, borderwidth=5,relief="ridge")
@@ -133,15 +187,20 @@ class filmImg(ttk.Frame):
         self.columnconfigure(1, weight=0)
 
     def book(self):
-        details_window = tk.Toplevel()
-        enter_details = enterDetails(self, details_window)
-        enter_details.pack(side="top", fill="both", expand=True)
+        # get showing time period
+        self.master.master.show_modal(enterDetails, {
+            "film": self.film,
+            "time_period": "morning"
+        })
 
 
 class NewBooking(ttk.Frame):
     def __init__(self, parent, *args, **kwargs):
         kwargs["padding"] = (3, 3, 3, 3)
         super().__init__(parent, *args, **kwargs)
+
+        self.cinema_location = ttk.Label(self, text=f"You are booking at: {self.master.current_user.cinema.name}")
+        self.cinema_location.grid(column=0, row=0, sticky="ne")
 
         self.button_frame = ttk.Frame(self)
         self.prev_button = ttk.Button(self.button_frame, text="Previous Page", command=self.prev_page)
@@ -160,6 +219,14 @@ class NewBooking(ttk.Frame):
             Showing.show_time <= day_end
         ).all()
 
+        if len(self.todays_films) == 0:
+            self.no_films_label = ttk.Label(self, text="There are no films showing today at your cinema.")
+            self.no_films_label.grid(column=0, row=1)
+
+            self.next_button.destroy()
+            self.prev_button.destroy()
+            return
+
         self.page = self.get_page()
 
         self.film_tiles = []
@@ -172,14 +239,12 @@ class NewBooking(ttk.Frame):
 
         self.film_tiles = []
 
-        print(self.page.items)
-
         for i, film in enumerate(self.page):
             film_img = filmImg(self, film=film)
-            film_img.grid(column=0, row=i, sticky="nsew")
+            film_img.grid(column=0, row=i+1, sticky="nsew")
             self.film_tiles.append(film_img)
 
-        self.button_frame.grid(column=0, row=len(self.page.items))
+        self.button_frame.grid(column=0, row=len(self.page.items)+1)
 
     def prev_page(self):
         if self.page.page == 1:

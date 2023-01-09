@@ -1,7 +1,7 @@
 from tkinter import ttk, messagebox
 from PIL import ImageTk, Image
 
-from windows import MainWindow
+from windows import NewBooking
 from database_models import session, User
 
 
@@ -39,7 +39,7 @@ class LoginWindow(ttk.Frame):
         if user.verify_password(self.password_entry.get()):
             self.master.current_user = user
             self.master.add_menu()
-            self.master.switch_window(MainWindow)
+            self.master.switch_window(NewBooking)
             return
 
         messagebox.showerror(title="Please try again", message="Invalid username/password, please try again")

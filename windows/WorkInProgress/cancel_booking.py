@@ -10,14 +10,18 @@ class cancelBooking(ttk.Frame):
         kwargs["padding"] = (3, 3, 3, 3)
         super().__init__(parent, *args, **kwargs)
         
-        self.inspect_frame = ttk.Frame(self, borderwidth=5, relief="ridge", width=1000, height=1000)
+        self.inspect_frame = ttk.Frame(self)
+
+        headings = [
+            "Booking Reference"
+            "Surname"
+        ]
+        self.treeview.frame = ttk.Treeview(self)
         #Booking reference field
         self.booking_reference = ttk.Entry(self.inspect_frame, width= 20, textvariable="Booking Reference: ")
         #Surname field
         self.booking_surname = ttk.Entry(self.inspect_frame, width= 20, textvariable="Surname: ")
         #Validation before searching database
-        self.confirm_button = ttk.Button(self.inspect_frame, text="Confirm")
-        #Cancel booking button
         self.cancel_button = ttk.Button(self.inspect_frame, text="Cancel Booking", image=parent.delete_icon, compund="left")
         #Deletes booking from database
 
@@ -29,7 +33,6 @@ class cancelBooking(ttk.Frame):
         self.inspect_frame.grid(column=0, row=0, rowspan=3, sticky="nsew")
         self.booking_reference.grid(column=0, row=0)
         self.booking_surname.grid(column=0, row=1)
-        self.confirm_button.grid(column=1, row=1, sticky="se")
         self.cancel_button.grid(column=0, row=2, sticky="s")
 
         self.booking_frame.grid(column=1, row=0, rowspan=3, sticky="nsew")
