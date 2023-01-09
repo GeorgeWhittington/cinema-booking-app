@@ -13,10 +13,22 @@ class cancelBooking(ttk.Frame):
         self.inspect_frame = ttk.Frame(self)
 
         headings = [
-            "Booking Reference"
+            "Booking Reference",
             "Surname"
         ]
-        self.treeview_frame = ttk.Treeview(self)
+
+        self.treeview_frame = ttk.Treeview(self,
+            columns=tuple(i for i in range(len(headings))),
+            show="headings",
+            selectmode="browse")
+        self.treeview_scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.treeview.yview)
+        self.treeview["yscrollcommand"] = self.treeview.set
+        for i, value in enumerate(headings):
+            self.treeview.column(i, stretch=True)
+            self.treeview.heading(i, text=value)
+
+        self.treeview.bind("<<TreeviewSelect>>", self.treeview_select)
+        
         #Booking reference field
         self.booking_reference = ttk.Entry(self.inspect_frame, width= 20, textvariable="Booking Reference: ")
         #Surname field

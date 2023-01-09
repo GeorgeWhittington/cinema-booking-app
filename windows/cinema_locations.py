@@ -4,7 +4,7 @@ from PIL import ImageTk, Image
 from database_models import session, Cinema
 
 class LocationWindow(ttk.Frame):
-    """Window which allows Admins/Manager to view and edit film genres."""
+    """Window which allows Admins/Manager to view and edit cinema locations."""
     def __init__(self, parent, *args, **kwargs):
         kwargs["padding"] = (3, 3, 3, 3)
         super().__init__(parent, *args, **kwargs)
@@ -67,7 +67,7 @@ class LocationWindow(ttk.Frame):
         self.update_cinema_button.state(["disabled"])
 
     def check_not_empty(self, error_message):
-        """Checks if there is a value in the genre selection label.
+        """Checks if there is a value in the cinema selection label.
 
         If there is, returns this value, if there isn't displays an error popup
         and returns None."""
@@ -79,7 +79,7 @@ class LocationWindow(ttk.Frame):
         return selected_cinema
 
     def check_cinema_exists(self, cinema_name):
-        """Checks if the genre provided exists, displays an error if not."""
+        """Checks if the cinema provided exists, displays an error if not."""
         genre = session.query(Cinema).filter_by(name=cinema_name).first()
         if not genre:
             messagebox.showerror(title="Error", message=f"The genre '{cinema_name}' no longer exists")
