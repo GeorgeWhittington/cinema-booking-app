@@ -18,7 +18,7 @@ class LocationWindow(ttk.Frame):
         self.selected_name_label_1 = ttk.Label(self, text="Selected Cinema:")
         self.selected_name_label_2 = ttk.Label(self)
 
-        self.new_name_label = ttk.Label(self, text="New Cinema Name:")
+        self.new_name_label = ttk.Label(self, text="New Cinema Location:")
         self.new_name_entry = ttk.Entry(self)
 
         self.button_frame = ttk.Frame(self)
