@@ -5,7 +5,7 @@ from typing import Optional
 from PIL import ImageTk, Image
 
 from database_models import session, Authority
-from windows import FilmShowingWindow, FilmWindow, GenreWindow, ReportWindow, LoginWindow, NewBooking
+from windows import FilmShowingWindow, FilmWindow, GenreWindow, ReportWindow, LoginWindow, NewBooking, cancelBooking, LocationWindow
 
 
 class CinemaApplication(Tk):
@@ -66,7 +66,7 @@ class CinemaApplication(Tk):
         # MacOS seems to handle about menu items similarly to preferences
 
         self.menu_file.add_command(label="New Booking", command=partial(self.switch_window, NewBooking))
-        self.menu_edit.add_command(label="Cancel Booking", command=partial(print, "Cancel Booking"))
+        self.menu_edit.add_command(label="Cancel Booking", command=partial(self.switch_window, cancelBooking))
         self.menu_edit.add_command(label="Logout", command=self.logout)
 
         # If not on macos, add a settings option to the edit menu
@@ -90,7 +90,7 @@ class CinemaApplication(Tk):
 
         # Not Admin, so must be manager
         self.menu_edit.add_separator()
-        self.menu_edit.add_command(label="Edit Locations", command=partial(print, "Update/Delete Locations"))
+        self.menu_edit.add_command(label="Edit Locations", command=partial(self.switch_window, LocationWindow))
 
     def show_modal(self, window: ttk.Frame, window_kwargs: Optional[dict] = None):
         """Creates a popup window containing the frame specified.

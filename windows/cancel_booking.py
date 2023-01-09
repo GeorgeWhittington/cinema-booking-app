@@ -16,7 +16,7 @@ class cancelBooking(ttk.Frame):
             "Booking Reference"
             "Surname"
         ]
-        self.treeview.frame = ttk.Treeview(self)
+        self.treeview_frame = ttk.Treeview(self)
         #Booking reference field
         self.booking_reference = ttk.Entry(self.inspect_frame, width= 20, textvariable="Booking Reference: ")
         #Surname field

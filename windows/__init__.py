@@ -4,6 +4,8 @@ from windows.genre_window import GenreWindow
 from windows.main_window import MainWindow
 from windows.report_window import ReportWindow
 from windows.new_booking import NewBooking
+from windows.cancel_booking import cancelBooking
+from windows.cinema_locations import LocationWindow
 
 # These two need to come after the rest to avoid circular imports
 from windows.login_window import LoginWindow
