@@ -69,12 +69,6 @@ class CinemaApplication(Tk):
         self.menu_edit.add_command(label="Cancel Booking", command=partial(self.switch_window, cancelBooking))
         self.menu_edit.add_command(label="Logout", command=self.logout)
 
-        # If not on macos, add a settings option to the edit menu
-        if self.tk.call("tk", "windowingsystem") != "aqua":
-            self.menu_edit.add_command(label="Settings", command=self.show_preferences_dialog)
-
-        if self.current_user.authority == Authority.BOOKING:
-            return
 
         # Authority not booking, so must have atleast admin permissions
         self.menu_file.add_separator()
