@@ -68,7 +68,6 @@ class enterDetails(ttk.Frame):
         self.seating_option_vip = ttk.Label(self.seating_frame, text="VIP")
         self.seating_no_value_vip = ttk.Spinbox(self.seating_frame, from_=0.0, to=10.0)
 
-        #Total cost real time 
         
         widgets = [
             (self.showing_label , self.showing_entry),
@@ -93,14 +92,35 @@ class enterDetails(ttk.Frame):
         self.seating_no_value_ug.grid(column=3, row=0)
         self.seating_option_vip.grid(column=4, row=0)
         self.seating_no_value_vip.grid(column=5, row=0)
+
+        #Total cost real time
+        self.price_frame = ttk.Frame(self)
+        self.total_price = 0
+        self.total_price_label = ttk.Label(self.price_frame, text="Total Cost:")
+        self.total_price_field = ttk.Label(self.price_frame, text="£0.00")
+
+    def update_total_price(self, price):
+        selected_showing = self.showing_entry.get()
+        film_title, show_time = selected_showing.split(", ")
+        film = session.query(Film).filter(Film.title == film_title).one()
+
+        price = film.price
+
+        self.total_price += price
+        self.total_price_field.config(text=str(self.total_price))
+
+
+    def add_details(self):
+        self.showing_entry.bind("<<ComboboxSelected", self.update_total_price)
         
         self.button_frame = ttk.Frame(self)
         self.confirm_button = ttk.Button(self.button_frame, text="Confirm", command=self.confirm)
         self.cancel_button = ttk.Button(self.button_frame, text="Cancel", command=self.dismiss)
         
-        self.button_frame.grid(column=0, row=1)
-        self.confirm_button.grid(column=0, row=0)
-        self.cancel_button.grid(column=1, row=0)
+        self.price_frame.grid(column=0, row=0)
+        self.button_frame.grid(column=0, row=2)
+        self.confirm_button.grid(column=0, row=1)
+        self.cancel_button.grid(column=1, row=1)
     
     def confirm(self):
         pass
@@ -134,8 +154,6 @@ class filmImg(ttk.Frame):
         self.genres = ttk.Label(self.rating_frame,text = self.film.string_conv("genres"))
         # --- BOOK BUTTON ---
         self.book_button = ttk.Button(self.booking_frame, text="Book Now", command=self.book)
-        
-        #BACKUP LABEL IF NO FILMS THAT DAY
 
         # --- Select Show Time
         morning_film = tk.StringVar()
