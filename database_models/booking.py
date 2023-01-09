@@ -31,11 +31,15 @@ class Booking(Base):
         return f"<Booking(id={self.id}, showing={self.showing})>"
 
     def calculate_price(self):
-        city = self.showing.screen.cinema.city
+        return self.calculate_booking_price(self.showing, self.lower_booked, self.upper_booked, self.vip_booked)
+
+    @staticmethod
+    def calculate_booking_price(showing, lower_booked, upper_booked, vip_booked):
+        city = showing.screen.cinema.city
 
         show_time = time(
-            hour=self.showing.show_time.hour,
-            minute=self.showing.show_time.minute)
+            hour=showing.show_time.hour,
+            minute=showing.show_time.minute)
 
         if time(8, 0, 0) <= show_time < time(12, 0, 0):
             # Starts between 8am-11:59am
@@ -47,8 +51,8 @@ class Booking(Base):
             # Starts between 5pm-12am
             base_price = city.evening_price
 
-        price = base_price * self.lower_booked
-        price += base_price * self.upper_booked * 1.2
-        price += (base_price * self.vip_booked * 1.2) * 1.2
+        price = base_price * lower_booked
+        price += base_price * upper_booked * 1.2
+        price += (base_price * vip_booked * 1.2) * 1.2
 
         return round(price, 2)
