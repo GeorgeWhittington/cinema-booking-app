@@ -233,13 +233,11 @@ class filmImg(ttk.Frame):
         self.book_button = ttk.Button(self.booking_frame, text="Book Now", command=self.book)
 
         # --- Select Show Time
-        morning_film = tk.StringVar()
-        afternoon_film = tk.StringVar()
-        evening_film = tk.StringVar()
+        self.time_period = tk.StringVar()
 
-        self.morning_film = ttk.Radiobutton(self.booking_frame, text="Morning", value="option 1", variable= morning_film)
-        self.afternoon_film = ttk.Radiobutton(self.booking_frame, text="Afternoon", value="option 2", variable= afternoon_film)
-        self.evening_film = ttk.Radiobutton(self.booking_frame, text="Evening", value="option 3", variable= evening_film)
+        self.morning_film = ttk.Radiobutton(self.booking_frame, text="Morning", value="morning", variable= self.time_period)
+        self.afternoon_film = ttk.Radiobutton(self.booking_frame, text="Afternoon", value="afternoon", variable= self.time_period)
+        self.evening_film = ttk.Radiobutton(self.booking_frame, text="Evening", value="evening", variable= self.time_period)
 
         #Poster for Film next to information on that film
         film_img = self.film.poster if self.film.poster else "assets/placeholder.png"
@@ -283,9 +281,10 @@ class filmImg(ttk.Frame):
 
     def book(self):
         # get showing time period
+        self.time_peiod_value = self.time_period.get()
         self.master.master.show_modal(enterDetails, {
             "film": self.film,
-            "time_period": "morning"
+            "time_period": self.time_peiod_value
         })
 
 
