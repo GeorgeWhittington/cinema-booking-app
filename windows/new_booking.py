@@ -281,10 +281,10 @@ class filmImg(ttk.Frame):
 
     def book(self):
         # get showing time period
-        self.time_peiod_value = self.time_period.get()
+        self.time_period_value = self.time_period.get()
         self.master.master.show_modal(enterDetails, {
             "film": self.film,
-            "time_period": self.time_peiod_value
+            "time_period": self.time_period_value
         })
 
 
