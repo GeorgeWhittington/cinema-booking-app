@@ -17,3 +17,10 @@ After cloning this repository and installing the correct version of python, you 
 Now you can install all the requirements by running `pip install -r requirements.txt`. If the requirements change at any point, you will need to re-run this command to update what you have installed.
 
 To run the application, run `python run.py`.
+
+# Usernames / Passwords
+
+Username: manager Password: pass2
+Username: admin Password: pass1
+Username: user Password: pass
+
