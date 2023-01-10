@@ -8,8 +8,9 @@ from sqlalchemy.sql import and_
 from datetime import datetime, time
 from misc.constants import ADD, EDIT, FILM_FORMAT, MIDNIGHT, EIGHT_AM
 from paginate import Page
+from tkinter import messagebox
 
-from database_models import session, Showing, Cinema, Film, Screen, Genre, AgeRatings
+from database_models import session, Showing, Cinema, Film, Screen, Genre, AgeRatings, Booking
 from windows import FilmShowingWindow, FilmWindow
 
 
@@ -40,21 +41,30 @@ class enterDetails(ttk.Frame):
             Showing.show_time <= time_end
         ).all()
 
+        if not self.showings:
+            messagebox.showerror(title="No Showings", message=f"There are no {self.time_period} showings of {self.film.title}")
+            self.dismiss()
+            return
+
         self.showings_formatted = []
         for showing in self.showings:
             self.showings_formatted.append(f"{showing.film.title}, {showing.show_time}")
 
         #To enter details for booking
-        self.details_frame = ttk.Frame(self, borderwidth=5, relief="ridge", width=1000, height=1000)
-        self.details_title = ttk.LabelFrame(self.details_frame, text="Booking Details")
+        self.details_frame = ttk.LabelFrame(self, text="Booking Details", borderwidth=5, relief="ridge")
+
         self.showing_label = ttk.Label(self.details_frame, text="Film Showing:")
         self.showing_entry = ttk.Combobox(self.details_frame)
         self.showing_entry["values"] = self.showings_formatted
 
+        self.showing_entry.bind("<<ComboboxSelected>>", self.update_total_price)
+
         self.full_name_label = ttk.Label(self.details_frame, text="Full Name:")
         self.full_name_field = ttk.Entry(self.details_frame)
+
         self.phone_no_label = ttk.Label(self.details_frame, text="Phone Number:")
         self.phone_no_field = ttk.Entry(self.details_frame)
+
         self.Email_label = ttk.Label(self.details_frame, text="E-Mail:")
         self.Email_field = ttk.Entry(self.details_frame)
 
@@ -68,7 +78,17 @@ class enterDetails(ttk.Frame):
         self.seating_option_vip = ttk.Label(self.seating_frame, text="VIP")
         self.seating_no_value_vip = ttk.Spinbox(self.seating_frame, from_=0.0, to=10.0)
 
-        
+        self.seating_no_value_lh.bind("<ButtonRelease-1>", self.spinbox_change)
+        self.seating_no_value_ug.bind("<ButtonRelease-1>", self.spinbox_change)
+        self.seating_no_value_vip.bind("<ButtonRelease-1>", self.spinbox_change)
+
+        self.price_frame = ttk.LabelFrame(self, text="Total Booking Cost", borderwidth=5, relief="ridge")
+        self.total_price_label = ttk.Label(self.price_frame, text="£0.00")
+
+        self.button_frame = ttk.Frame(self)
+        self.confirm_button = ttk.Button(self.button_frame, text="Confirm", command=self.confirm)
+        self.cancel_button = ttk.Button(self.button_frame, text="Cancel", command=self.dismiss)
+
         widgets = [
             (self.showing_label , self.showing_entry),
             (self.full_name_label , self.full_name_field),
@@ -80,8 +100,10 @@ class enterDetails(ttk.Frame):
         for y, (label, field) in enumerate(widgets):
             label.grid(column=0, row=y, sticky="w")
             field.grid(column=1, row=y, sticky="ew")
-        
+
         self.details_frame.grid(column=0, row=0)
+        self.price_frame.grid(column=0, row=1)
+        self.button_frame.grid(column=0, row=2)
 
         self.details_frame.columnconfigure(0, weight=0)
         self.details_frame.columnconfigure(1, weight=1)
@@ -93,40 +115,95 @@ class enterDetails(ttk.Frame):
         self.seating_option_vip.grid(column=4, row=0)
         self.seating_no_value_vip.grid(column=5, row=0)
 
-        #Total cost real time
-        self.price_frame = ttk.Frame(self)
-        self.total_price = 0
-        self.total_price_label = ttk.Label(self.price_frame, text="Total Cost:")
-        self.total_price_field = ttk.Label(self.price_frame, text="£0.00")
+        self.total_price_label.grid(column=0, row=0, sticky="w")
 
-    def update_total_price(self, price):
-        selected_showing = self.showing_entry.get()
-        film_title, show_time = selected_showing.split(", ")
-        film = session.query(Film).filter(Film.title == film_title).one()
-
-        price = film.price
-
-        self.total_price += price
-        self.total_price_field.config(text=str(self.total_price))
-
-
-    def add_details(self):
-        self.showing_entry.bind("<<ComboboxSelected", self.update_total_price)
-        
-        self.button_frame = ttk.Frame(self)
-        self.confirm_button = ttk.Button(self.button_frame, text="Confirm", command=self.confirm)
-        self.cancel_button = ttk.Button(self.button_frame, text="Cancel", command=self.dismiss)
-        
-        self.price_frame.grid(column=0, row=0)
-        self.button_frame.grid(column=0, row=2)
         self.confirm_button.grid(column=0, row=1)
         self.cancel_button.grid(column=1, row=1)
-    
+
+    @staticmethod
+    def spinbox_int(spinbox):
+        try:
+            return int(spinbox.get())
+        except ValueError:
+            return 0
+
+    def spinbox_change(self, event):
+        """Spinboxes have a small delay between events that signal
+        they have changed, and their value updating. To counter this
+        calls to update_total_price from them are delayed slightly too."""
+        # 1ms
+        self.after(1, self.update_total_price, None)
+
+    def get_total_price(self):
+        showing_index = self.showing_entry.current()
+        if showing_index == -1:
+            return 0.0
+
+        try:
+            showing = self.showings[showing_index]
+        except IndexError:
+            return 0.0
+
+        l_booked = self.spinbox_int(self.seating_no_value_lh)
+        u_booked = self.spinbox_int(self.seating_no_value_ug)
+        vip_booked = self.spinbox_int(self.seating_no_value_vip)
+
+        return Booking.calculate_booking_price(showing, l_booked, u_booked, vip_booked)
+
+    def update_total_price(self, event):
+        self.total_price_label["text"] = f"£{self.get_total_price():.2f}"
+
     def confirm(self):
-        pass
+        try:
+            showing_index = self.showing_entry.current()
+            if showing_index == -1:
+                raise ValueError("Invalid showing selected")
+
+            try:
+                showing = self.showings[showing_index]
+            except IndexError:
+                raise ValueError("Invalid showing selected")
+
+            name = self.full_name_field.get().strip()
+            if not name:
+                raise ValueError("Please input the name of the person who is booking")
+
+            phone_no = self.phone_no_field.get().strip()
+            if not phone_no:
+                raise ValueError("Please input a phone number")
+
+            email = self.Email_field.get().strip()
+            if not email:
+                raise ValueError("Please input an email address")
+
+            l_booked = self.spinbox_int(self.seating_no_value_lh)
+            u_booked = self.spinbox_int(self.seating_no_value_ug)
+            vip_booked = self.spinbox_int(self.seating_no_value_vip)
+            if not any([l_booked, u_booked, vip_booked]):
+                raise ValueError("To make a booking you must select atleast one seat")
+        except ValueError as e:
+            messagebox.showerror(title="Invalid Booking details", message=e)
+            return
+
+        booking = Booking(
+            showing=showing,
+            employee=self.master.master.current_user,
+            lower_booked=l_booked,
+            upper_booked=u_booked,
+            vip_booked=vip_booked,
+            name=name,
+            phone=phone_no,
+            email=email)
+        session.add(booking)
+        session.commit()
+
+        messagebox.showinfo(
+            title="Booking Created",
+            message=f"A booking to see {showing.film.title} has been made, your booking reference is #{booking.id}")
+        self.dismiss()
 
 class filmImg(ttk.Frame):
-    
+
     # --- Film Image ---
         # In a seperate frame you will have the movie poster with a book now button underneath
     def __init__(self, parent, *args, **kwargs):
@@ -145,7 +222,7 @@ class filmImg(ttk.Frame):
         self.title = ttk.Label(self.title_frame,text = self.film.title)
         self.year = ttk.Label(self.title_frame,text = self.film.year_published)
         self.duration = ttk.Label(self.title_frame,text = self.film.string_conv("duration"))
-        
+
         self.synopsis = ttk.Label(self.inspect_frame, text = self.film.synopsis, wraplength=800)
         self.cast = ttk.Label(self.inspect_frame,text = self.film.cast)
 
@@ -159,11 +236,11 @@ class filmImg(ttk.Frame):
         morning_film = tk.StringVar()
         afternoon_film = tk.StringVar()
         evening_film = tk.StringVar()
-        
+
         self.morning_film = ttk.Radiobutton(self.booking_frame, text="Morning", value="option 1", variable= morning_film)
         self.afternoon_film = ttk.Radiobutton(self.booking_frame, text="Afternoon", value="option 2", variable= afternoon_film)
         self.evening_film = ttk.Radiobutton(self.booking_frame, text="Evening", value="option 3", variable= evening_film)
-        
+
         #Poster for Film next to information on that film
         film_img = self.film.poster if self.film.poster else "assets/placeholder.png"
         self.poster_frame = ttk.Frame(self, borderwidth=5, relief="ridge", width=200, height=200)
@@ -181,7 +258,7 @@ class filmImg(ttk.Frame):
         self.title.grid(column=0, row=0)
         self.year.grid(column=1, row=0)
         self.duration.grid(column=2, row=0)
-        
+
         self.synopsis.grid(column=0, row=0, sticky="w")
         self.cast.grid(column=0, row=1, sticky="w")
 
